@@ -1,3 +1,5 @@
+import 'package:expense_tracking_app/views/add_expense_screen.dart';
+import 'package:expense_tracking_app/widgets/expense_item_card.dart';
 import 'package:flutter/material.dart';
 
 class ExpensesPage extends StatelessWidget {
@@ -55,55 +57,6 @@ class ExpensesPage extends StatelessWidget {
   }
 }
 
-class ExpenseItemCard extends StatelessWidget {
-  final String expenseName;
-  final double expenseAmount;
-
-  const ExpenseItemCard({super.key, 
-    required this.expenseName,
-    required this.expenseAmount,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      elevation: 3.0,
-      margin: const EdgeInsets.symmetric(vertical: 8.0),
-      child: ListTile(
-        title: Text(expenseName),
-        subtitle: Text('\$$expenseAmount'),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () {
-            // Implement logic to delete this expense.
-          },
-        ),
-        onTap: () {
-          // Implement logic to view or edit this expense.
-        },
-      ),
-    );
-  }
-}
 
 // You can create a separate AddExpensePage for adding new expenses.
-class AddExpensePage extends StatelessWidget {
-  const AddExpensePage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Expense'),
-      ),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Add form fields and buttons for adding a new expense here.
-          ],
-        ),
-      ),
-    );
-  }
-}
