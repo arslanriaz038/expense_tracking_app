@@ -1,13 +1,39 @@
 import 'package:flutter/material.dart';
 
-class AddExpensePage extends StatelessWidget {
-  const AddExpensePage({Key? key}) : super(key: key);
+class AddExpensePage extends StatefulWidget {
+  final bool isEditing; // Indicates whether it's an edit mode.
+
+  // Pass isEditing as true when editing an expense.
+  const AddExpensePage({Key? key, this.isEditing = false}) : super(key: key);
+
+  @override
+  _AddExpensePageState createState() => _AddExpensePageState();
+}
+
+class _AddExpensePageState extends State<AddExpensePage> {
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  String _selectedCategory = 'Food'; // Default category
+  DateTime _selectedDate = DateTime.now(); // Default date
+
+  @override
+  void initState() {
+    super.initState();
+    // Populate fields with existing expense data if editing.
+    if (widget.isEditing) {
+      // Replace with logic to fetch and populate expense data for editing.
+      _descriptionController.text = 'Expense Description'; // Example data.
+      _amountController.text = '50.0'; // Example data.
+      _selectedCategory = 'Transportation'; // Example data.
+      _selectedDate = DateTime(2023, 10, 1); // Example data.
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Expense'),
+        title: Text(widget.isEditing ? 'Edit Expense' : 'Add Expense'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -22,42 +48,43 @@ class AddExpensePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16.0),
-            // Expense Name TextField
             TextFormField(
+              controller: _descriptionController,
               decoration: const InputDecoration(
                 labelText: 'Expense Description',
               ),
             ),
             const SizedBox(height: 16.0),
-            // Expense Amount TextField
             TextFormField(
+              controller: _amountController,
               decoration: const InputDecoration(
                 labelText: 'Expense Amount',
               ),
               keyboardType: TextInputType.number,
             ),
             const SizedBox(height: 16.0),
-            // Expense Date Selection
             GestureDetector(
               onTap: () {
-                // Implement date picker here to allow the user to select the date.
+                // Implement date picker to select the date.
               },
-              child: const Row(
+              child: Row(
                 children: [
-                  Text('Expense Date: '),
+                  const Text('Expense Date: '),
                   Text(
-                    'Selected Date', // Display the selected date here.
-                    style: TextStyle(fontWeight: FontWeight.bold),
+                    _selectedDate.toString(), // Display the selected date here.
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 16.0),
-            // Expense Category Dropdown
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(
-                labelText: 'Expense Category',
-              ),
+              value: _selectedCategory,
+              onChanged: (String? newValue) {
+                setState(() {
+                  _selectedCategory = newValue!;
+                });
+              },
               items: <String>[
                 'Food',
                 'Transportation',
@@ -69,25 +96,28 @@ class AddExpensePage extends StatelessWidget {
                   child: Text(value),
                 );
               }).toList(),
-              onChanged: (String? newValue) {
-                // Handle category selection.
-              },
+              decoration: const InputDecoration(
+                labelText: 'Expense Category',
+              ),
             ),
             const SizedBox(height: 32.0),
-            // Attachment Image Upload (Optional)
             ElevatedButton(
               onPressed: () {
-                // Implement logic for uploading receipt image (if needed).
+                // Implement logic to upload receipt image (if needed).
               },
               child: const Text('Attach Receipt Image'),
             ),
             const SizedBox(height: 32.0),
-            // Save Button
             ElevatedButton(
               onPressed: () {
-                // Implement logic to save the new expense.
+                // Implement logic to save or update the expense based on widget.isEditing.
+                if (widget.isEditing) {
+                  // Update existing expense logic here.
+                } else {
+                  // Add new expense logic here.
+                }
               },
-              child: const Text('Save Expense'),
+              child: Text(widget.isEditing ? 'Update Expense' : 'Save Expense'),
             ),
           ],
         ),
