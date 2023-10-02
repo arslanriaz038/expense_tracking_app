@@ -9,6 +9,7 @@ class ExpensesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        forceMaterialTransparency: true,
         title: const Text('Expenses'),
       ),
       body: Padding(
