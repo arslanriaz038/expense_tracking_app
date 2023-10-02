@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="primaryColor">#F55951</color>
+    <color name="snow">#FFFAF9</color>
+    <color name="darGreyText">#777777</color>
+    <color name="btnBorder">#202322</color>
+    <color name="textFieldBorder">#C5C5C5</color>
+
+    <color name="tutu">#FFF6FC</color>
+    <color name="alto">#E0E0E0</color>
+    <color name="alabaster">#F8F8F8</color>
+    <color name="osloGray">#909191</color>
+    <color name="mercury">#E9E9E9</color>
+    <color name="cornflowerBlue">#635BFF</color>
+    <color name="wildSand">#F6F6F6</color>
+    <color name="black">#202322</color>
+    <color name="blackHaze">#E6E7E7</color>
+    <color name="gray">#8A8A8A</color>
+
+</resources>
