@@ -2,6 +2,7 @@ import 'package:expense_tracking_app/gen/assets.gen.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/expenses_screen.dart';
+import 'package:expense_tracking_app/views/social_login_buttons/view/social_login_buttons.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:flutter/material.dart';
 
@@ -78,6 +79,7 @@ class LoginPage extends StatelessWidget {
                     ?.copyWith(color: ColorName.darGreyText),
               ),
               const SizedBox(height: 24),
+              const SocialLoginButtons(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[

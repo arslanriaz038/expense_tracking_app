@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "760624102316",
+    "project_id": "expense-tracking-app-e4327",
+    "storage_bucket": "expense-tracking-app-e4327.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:760624102316:android:283d26082a844d14125809",
+        "android_client_info": {
+          "package_name": "com.example.expense_tracking_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "760624102316-akbtqd3ebkjf5dclma67pu9s9p052vnn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.expense_tracking_app",
+            "certificate_hash": "fbaa4af78c73cf5c0d6adfc732f31831027519ef"
+          }
+        },
+        {
+          "client_id": "760624102316-rp2ahnnvmm4hneob5ns4lq0ihls1pgrb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF_Op0SKBlQiubGXwMl1oZR7PF-YxU6tE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "760624102316-rp2ahnnvmm4hneob5ns4lq0ihls1pgrb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
