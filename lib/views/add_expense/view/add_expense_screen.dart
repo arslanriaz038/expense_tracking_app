@@ -32,8 +32,8 @@ class AddExpensePage extends StatelessWidget {
       cubit.descriptionController.text = '';
       cubit.amountController.text = '';
       cubit.selectedDate = DateTime.now();
-      cubit.pickedImagePath = null; // Clear the image path
-      cubit.updateSelectedCategory('Food'); // Set a default category
+      cubit.pickedImagePath = null;
+      cubit.updateSelectedCategory('Food');
     }
 
     Future<void> pickImage() async {
@@ -45,9 +45,7 @@ class AddExpensePage extends StatelessWidget {
 
     return BlocConsumer<ExpensesCubit, ExpensesCubitState>(
       bloc: cubit,
-      listener: (context, state) {
-        // TODO: implement listener
-      },
+      listener: (context, state) {},
       builder: (context, state) {
         String? pickedImagePath;
 
@@ -140,18 +138,15 @@ class AddExpensePage extends StatelessWidget {
                       child: Stack(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                                15), // Adjust the border radius as needed
+                            borderRadius: BorderRadius.circular(15),
                             child: cubit.pickedImagePath != null
                                 ? Image.file(
                                     File(cubit.pickedImagePath!),
-                                    // width: 120,
                                     height: 120,
                                     fit: BoxFit.cover,
                                   )
                                 : Image.network(
                                     expense?.receiptImageUrl ?? '',
-                                    // width: 120,
                                     height: 120,
                                     fit: BoxFit.cover,
                                   ),
@@ -172,7 +167,7 @@ class AddExpensePage extends StatelessWidget {
                                   child: Icon(
                                     Icons.edit,
                                     color: ColorName.primaryColor,
-                                    size: 20, // Adjust the size as needed
+                                    size: 20,
                                   ),
                                 ),
                               ),
@@ -189,8 +184,7 @@ class AddExpensePage extends StatelessWidget {
                           : () async {
                               if (expense?.id != null) {
                                 cubit.updateExpense(
-                                  expense!
-                                      .id!, // Pass the expense ID to identify which expense to update
+                                  expense!.id!,
                                 );
                               } else {
                                 await cubit.saveExpense();
