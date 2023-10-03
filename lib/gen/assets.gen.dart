@@ -5,7 +5,7 @@
 
 // coverage:ignore-file
 // ignore_for_file: type=lint
-// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal,deprecated_member_use
+// ignore_for_file: directives_ordering,unnecessary_import,implicit_dynamic_list_literal
 
 import 'package:flutter/widgets.dart';
 
@@ -15,6 +15,10 @@ class $AssetsAppIconsGen {
   /// File path: assets/app_icons/apple.png
   AssetGenImage get apple => const AssetGenImage('assets/app_icons/apple.png');
 
+  /// File path: assets/app_icons/expenses.png
+  AssetGenImage get expenses =>
+      const AssetGenImage('assets/app_icons/expenses.png');
+
   /// File path: assets/app_icons/google.png
   AssetGenImage get google =>
       const AssetGenImage('assets/app_icons/google.png');
@@ -23,12 +27,8 @@ class $AssetsAppIconsGen {
   AssetGenImage get successIcon =>
       const AssetGenImage('assets/app_icons/success_icon.png');
 
-  /// File path: assets/app_icons/sui_dhaaga_logo.png
-  AssetGenImage get suiDhaagaLogo =>
-      const AssetGenImage('assets/app_icons/sui_dhaaga_logo.png');
-
   /// List of all assets
-  List<AssetGenImage> get values => [apple, google, successIcon, suiDhaagaLogo];
+  List<AssetGenImage> get values => [apple, expenses, google, successIcon];
 }
 
 class Assets {
@@ -95,16 +95,7 @@ class AssetGenImage {
     );
   }
 
-  ImageProvider provider({
-    AssetBundle? bundle,
-    String? package,
-  }) {
-    return AssetImage(
-      _assetName,
-      bundle: bundle,
-      package: package,
-    );
-  }
+  ImageProvider provider() => AssetImage(_assetName);
 
   String get path => _assetName;
 
