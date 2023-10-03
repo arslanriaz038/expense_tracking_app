@@ -1,25 +1,27 @@
+import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ExpenseItemCard extends StatelessWidget {
-  final String expenseName;
-  final String expenseAmount;
+  final Expense expense;
 
   const ExpenseItemCard({
     super.key,
-    required this.expenseName,
-    required this.expenseAmount,
+    required this.expense,
   });
 
   @override
   Widget build(BuildContext context) {
+    final ExpensesCubit cubit = context.read<ExpensesCubit>();
+
     return Card(
       elevation: 3.0,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
-        title: Text(expenseName),
-        subtitle: Text(expenseAmount),
+        title: Text(expense.description),
+        subtitle: Text(expense.amount),
         trailing: SizedBox(
           width: 100,
           child: Row(
@@ -27,35 +29,27 @@ class ExpenseItemCard extends StatelessWidget {
               IconButton(
                 icon: const Icon(Icons.edit),
                 onPressed: () {
-                  // Implement logic to delete this expense.
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (context) => const AddExpensePage(
-                        isEditing: true,
-                      ), // Replace with your add expense screen.
+                      builder: (context) => AddExpensePage(
+                        expense: expense,
+                      ),
                     ),
                   );
                 },
               ),
               IconButton(
                 icon: const Icon(Icons.delete),
-                onPressed: () {
-                  // Implement logic to delete this expense.
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddExpensePage(
-                        isEditing: true,
-                      ), // Replace with your add expense screen.
-                    ),
-                  );
+                onPressed: () async {
+                  if (expense.id != null) {
+                    await cubit.deleteExpense(expense.id!);
+                  }
                 },
               ),
             ],
           ),
         ),
-        onTap: () {
-          // Implement logic to view or edit this expense.
-        },
+        onTap: () {},
       ),
     );
   }

@@ -20,6 +20,33 @@ class AllExpensesLoadedState extends ExpensesCubitState {
   List<Object> get props => [expenses];
 }
 
+class DateUpdatedState extends ExpensesCubitState {
+  final DateTime selectedDate;
+
+  const DateUpdatedState(this.selectedDate);
+
+  @override
+  List<Object> get props => [selectedDate];
+}
+
+class ExpenseUpdatedState extends ExpensesCubitState {
+  final Expense expense;
+
+  const ExpenseUpdatedState(this.expense);
+
+  @override
+  List<Object> get props => [expense];
+}
+
+class ExpenseDeletedState extends ExpensesCubitState {
+  final String expenseId;
+
+  const ExpenseDeletedState(this.expenseId);
+
+  @override
+  List<Object> get props => [expenseId];
+}
+
 class CategoryUpdatedState extends ExpensesCubitState {}
 
 class SuccessState extends ExpensesCubitState {}

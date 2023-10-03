@@ -66,34 +66,41 @@ class FirebaseServices {
     }
   }
 
-  // Future<void> updateConversation({
-  //   required List<ChatMessageModel> messages,
-  //   required String docId,
-  //   String? selectedChild,
-  // }) async {
-  //   try {
-  //     final CollectionReference conversations = FirebaseFirestore.instance
-  //         .collection(FirebaseCollections.conversations);
-
-  //     final Map<String, dynamic> data = {
-  //       'updatedAt': Timestamp.now().toDate(),
-  //       'messages': messages.map((message) => message.toMap()).toList(),
-  //     };
-  //     if (selectedChild != null) {
-  //       data.putIfAbsent('selected_child', () => selectedChild);
-  //     }
-  //     await conversations.doc(docId).update(data);
-  //     log('Conversation updated successfully!');
-  //   } catch (error) {
-  //     log('Error updating conversation: $error');
-  //   }
-  // }
-
-  Future<void> resetPassword(String email) async {
+  Future<void> updateExpense(String expenseId, Expense updatedExpense) async {
     try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+      if (user != null) {
+        final userId = user?.uid;
+        final DocumentReference expenseRef = _firestoreInstance
+            .collection('users')
+            .doc(userId)
+            .collection('expenses')
+            .doc(expenseId);
+
+        final Map<String, dynamic> updatedExpenseData = updatedExpense.toMap();
+
+        await expenseRef.update(updatedExpenseData);
+      }
     } catch (error) {
-      rethrow;
+      print('Error updating expense in Firestore: $error');
+      // Handle the error as needed (e.g., show an error message to the user).
+    }
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      if (user != null) {
+        final userId = user?.uid;
+        final DocumentReference expenseRef = _firestoreInstance
+            .collection('users')
+            .doc(userId)
+            .collection('expenses')
+            .doc(expenseId);
+
+        await expenseRef.delete();
+      }
+    } catch (error) {
+      print('Error deleting expense from Firestore: $error');
+      // Handle the error as needed (e.g., show an error message to the user).
     }
   }
 }

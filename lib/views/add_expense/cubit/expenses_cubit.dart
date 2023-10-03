@@ -14,7 +14,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
   String selectedCategory = 'Food'; // Default category
-  final DateTime selectedDate = DateTime.now(); // Default date
+  DateTime selectedDate = DateTime.now(); // Default date
 
   final List<Expense> allExpenses = [];
 
@@ -24,18 +24,58 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     emit(CategoryUpdatedState());
   }
 
+  void updateSelectedDate(DateTime date) {
+    selectedDate = date;
+    emit(DateUpdatedState(selectedDate));
+  }
+
   Future<void> getAllExpenses() async {
     try {
-      // Call the function from FirebaseServices to get all expenses
+      emit(LoadingState());
+
       final expenses = await _firebaseServices.getAllExpenses();
 
       allExpenses.addAll(expenses ?? []);
 
-      // Notify the UI with the list of expenses
       emit(AllExpensesLoadedState(expenses: expenses ?? []));
     } catch (e) {
-      // Handle errors, e.g., emit an error state
       emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
+    }
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    try {
+      emit(LoadingState());
+
+      // Call the function from FirebaseServices to delete the expense
+      await _firebaseServices.deleteExpense(expenseId);
+
+      // Remove the deleted expense from the local list
+      allExpenses.removeWhere((expense) => expense.id == expenseId);
+
+      emit(ExpenseDeletedState(expenseId));
+    } catch (e) {
+      emit(FailedState(errorMessage: 'Failed to delete expense: $e'));
+    }
+  }
+
+  Future<void> updateExpense(String expenseId, Expense updatedExpense) async {
+    try {
+      // Call the function from FirebaseServices to update the expense
+
+      emit(LoadingState());
+      await _firebaseServices.updateExpense(expenseId, updatedExpense);
+
+      // Update the local list with the updated expense
+      final index =
+          allExpenses.indexWhere((expense) => expense.id == expenseId);
+      if (index != -1) {
+        allExpenses[index] = updatedExpense;
+      }
+
+      emit(ExpenseUpdatedState(updatedExpense));
+    } catch (e) {
+      emit(FailedState(errorMessage: 'Failed to update expense: $e'));
     }
   }
 

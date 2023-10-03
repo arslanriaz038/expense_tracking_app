@@ -1,27 +1,34 @@
+import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class AddExpensePage extends StatelessWidget {
-  final bool isEditing;
+  final Expense? expense;
 
-  const AddExpensePage({Key? key, this.isEditing = false}) : super(key: key);
+  const AddExpensePage({Key? key, this.expense}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => ExpensesCubit(),
       child: BlocConsumer<ExpensesCubit, ExpensesCubitState>(
-        listener: (context, state) {
-          // TODO: implement listener
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           final ExpensesCubit cubit = context.read<ExpensesCubit>();
 
+          if (expense != null) {
+            cubit.descriptionController.text = expense!.description;
+            cubit.amountController.text = expense!.amount.toString();
+            cubit.selectedDate = expense!.date;
+            cubit.updateSelectedCategory(expense!.category);
+          }
+
           return Scaffold(
             appBar: AppBar(
-              title: Text(isEditing ? 'Edit Expense' : 'Add Expense'),
+              title: Text(expense != null ? 'Edit Expense' : 'Add Expense'),
             ),
             body: SingleChildScrollView(
               child: Padding(
@@ -49,15 +56,23 @@ class AddExpensePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16.0),
                     GestureDetector(
-                      onTap: () {
-                        // Implement date picker to select the date.
+                      onTap: () async {
+                        final pickedDate = await showDatePicker(
+                          context: context,
+                          initialDate: cubit.selectedDate,
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime.now(),
+                        );
+                        if (pickedDate != null &&
+                            pickedDate != cubit.selectedDate) {
+                          cubit.updateSelectedDate(pickedDate);
+                        }
                       },
                       child: Row(
                         children: [
                           const Text('Expense Date: '),
                           Text(
-                            cubit.selectedDate
-                                .toString(), // Display the selected date here.
+                            DateFormat('yyyy-MM-dd').format(cubit.selectedDate),
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -86,24 +101,21 @@ class AddExpensePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 32.0),
                     ElevatedButton(
-                      onPressed: () {
-                        // Implement logic to upload receipt image (if needed).
-                      },
+                      onPressed: () {},
                       child: const Text('Attach Receipt Image'),
                     ),
                     const SizedBox(height: 32.0),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          // Implement logic to save or update the expense based on widget.isEditing.
-                          if (isEditing) {
-                            // Update existing expense logic here.
+                          if (expense != null) {
                           } else {
                             await cubit.saveExpense();
                           }
                         },
-                        child:
-                            Text(isEditing ? 'Update Expense' : 'Save Expense'),
+                        child: Text(expense != null
+                            ? 'Update Expense'
+                            : 'Save Expense'),
                       ),
                     ),
                   ],

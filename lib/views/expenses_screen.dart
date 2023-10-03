@@ -13,9 +13,7 @@ class ExpensesPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => ExpensesCubit()..getAllExpenses(),
       child: BlocConsumer<ExpensesCubit, ExpensesCubitState>(
-        listener: (context, state) {
-          // TODO: implement listener
-        },
+        listener: (context, state) {},
         builder: (context, state) {
           final ExpensesCubit cubit = context.read<ExpensesCubit>();
 
@@ -49,15 +47,10 @@ class ExpensesPage extends StatelessWidget {
                             child: CircularProgressIndicator.adaptive(),
                           )
                         : ListView.builder(
-                            itemCount: cubit.allExpenses
-                                .length, // Replace with the actual number of expenses.
+                            itemCount: cubit.allExpenses.length,
                             itemBuilder: (BuildContext context, int index) {
-                              // Replace with logic to display expense items.
                               return ExpenseItemCard(
-                                // You can pass expense details to this widget.
-                                expenseName:
-                                    cubit.allExpenses[index].description,
-                                expenseAmount: cubit.allExpenses[index].amount,
+                                expense: cubit.allExpenses[index],
                               );
                             },
                           ),
@@ -67,12 +60,9 @@ class ExpensesPage extends StatelessWidget {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                // Navigate to a screen for adding a new expense.
-                // You can create this screen separately.
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) =>
-                        const AddExpensePage(), // Replace with your add expense screen.
+                    builder: (context) => const AddExpensePage(),
                   ),
                 );
               },
@@ -84,7 +74,3 @@ class ExpensesPage extends StatelessWidget {
     );
   }
 }
-
-
-// You can create a separate AddExpensePage for adding new expenses.
-
