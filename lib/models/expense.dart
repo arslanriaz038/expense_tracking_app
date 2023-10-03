@@ -1,15 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Expense {
-  final String id; // Unique identifier for the expense.
+  final String? id; // Unique identifier for the expense.
   final String description;
-  final double amount;
+  final String amount;
   final DateTime date;
   final String category;
   final String? receiptImageUrl; // Optional receipt image URL.
 
   Expense({
-    required this.id,
+    this.id,
     required this.description,
     required this.amount,
     required this.date,
@@ -34,7 +34,7 @@ class Expense {
     return Expense(
       id: snapshot.id,
       description: data['description'] ?? '',
-      amount: (data['amount'] ?? 0).toDouble(),
+      amount: data['amount'] ?? '',
       date: (data['date'] as Timestamp).toDate(),
       category: data['category'] ?? '',
       receiptImageUrl: data['receiptImageUrl'],
