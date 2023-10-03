@@ -23,12 +23,12 @@ class SocialLoginButtons extends StatelessWidget {
       child: BlocConsumer<SocialLoginCubit, SocialLoginCubitState>(
         listener: (context, state) {
           if (state is FailedState) {
-            if (state.errorMessage != null) {
-              AppAlerts.showErrorMessage(
-                context,
-                state.errorMessage,
-              );
-            }
+            // if (state.errorMessage != null) {
+            //   AppAlerts.showErrorMessage(
+            //     context,
+            //     state.errorMessage,
+            //   );
+            // }
           } else if (state is LoginSuccess) {
             _openMainScreen(context);
           }

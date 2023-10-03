@@ -1,4 +1,4 @@
-import 'package:expense_tracking_app/views/add_expense/cubit/add_update_expense_cubit.dart';
+import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,14 +11,13 @@ class AddExpensePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AddUpdateExpenseCubit(),
-      child: BlocConsumer<AddUpdateExpenseCubit, AddUpdateExpenseCubitState>(
+      create: (context) => ExpensesCubit(),
+      child: BlocConsumer<ExpensesCubit, ExpensesCubitState>(
         listener: (context, state) {
           // TODO: implement listener
         },
         builder: (context, state) {
-          final AddUpdateExpenseCubit cubit =
-              context.read<AddUpdateExpenseCubit>();
+          final ExpensesCubit cubit = context.read<ExpensesCubit>();
 
           return Scaffold(
             appBar: AppBar(

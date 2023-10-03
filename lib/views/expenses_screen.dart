@@ -1,6 +1,7 @@
-import 'package:expense_tracking_app/views/add_expense/cubit/add_update_expense_cubit.dart';
-import 'package:expense_tracking_app/views/add_expense/view/add_update_expense_screen.dart';
+import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
+import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:expense_tracking_app/widgets/expense_item_card.dart';
+import 'package:expense_tracking_app/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,19 +11,24 @@ class ExpensesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AddUpdateExpenseCubit()..getAllExpenses(),
-      child: BlocConsumer<AddUpdateExpenseCubit, AddUpdateExpenseCubitState>(
+      create: (context) => ExpensesCubit()..getAllExpenses(),
+      child: BlocConsumer<ExpensesCubit, ExpensesCubitState>(
         listener: (context, state) {
           // TODO: implement listener
         },
         builder: (context, state) {
-          final AddUpdateExpenseCubit cubit =
-              context.read<AddUpdateExpenseCubit>();
+          final ExpensesCubit cubit = context.read<ExpensesCubit>();
 
           return Scaffold(
             appBar: AppBar(
               forceMaterialTransparency: true,
               title: const Text('Expenses'),
+              actions: const [
+                Padding(
+                  padding: EdgeInsets.only(right: 20.0),
+                  child: UserProfileAvatar(showOnlineIndicator: false),
+                )
+              ],
             ),
             body: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -30,7 +36,7 @@ class ExpensesPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const Text(
-                    'Your Expenses',
+                    'My Expenses',
                     style: TextStyle(
                       fontSize: 24.0,
                       fontWeight: FontWeight.bold,

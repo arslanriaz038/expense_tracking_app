@@ -80,33 +80,7 @@ class LoginPage extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               const SocialLoginButtons(),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  SizedBox(
-                    // width: 38,
-                    // height: 38,
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      child: Assets.appIcons.google.image(),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  SizedBox(
-                    // width: 38,
-                    // height: 38,
-                    child: OutlinedButton(
-                      onPressed: () {},
-                      child: Assets.appIcons.apple.image(),
-                    ),
-                  ),
-                ],
-              ),
               const SizedBox(height: 64),
-              Text(
-                'Continue without login',
-                style: Theme.of(context).textTheme.labelLarge,
-              ),
               const SizedBox(height: 83),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

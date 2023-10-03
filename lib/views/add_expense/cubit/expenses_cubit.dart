@@ -1,18 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
-import 'package:expense_tracking_app/services/user_services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+part 'expenses_cubit_state.dart';
 
-part 'add_update_expense_cubit_state.dart';
-
-class AddUpdateExpenseCubit extends Cubit<AddUpdateExpenseCubitState> {
-  AddUpdateExpenseCubit() : super(AddUpdateExpenseCubitInitial());
+class ExpensesCubit extends Cubit<ExpensesCubitState> {
+  ExpensesCubit() : super(ExpenseCubitInitial());
 
   final FirebaseServices _firebaseServices = FirebaseServices();
 
