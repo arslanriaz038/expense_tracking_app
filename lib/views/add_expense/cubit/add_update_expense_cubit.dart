@@ -21,10 +21,27 @@ class AddUpdateExpenseCubit extends Cubit<AddUpdateExpenseCubitState> {
   String selectedCategory = 'Food'; // Default category
   final DateTime selectedDate = DateTime.now(); // Default date
 
+  final List<Expense> allExpenses = [];
+
   updateSelectedCategory(String? newValue) {
     selectedCategory = newValue!;
 
     emit(CategoryUpdatedState());
+  }
+
+  Future<void> getAllExpenses() async {
+    try {
+      // Call the function from FirebaseServices to get all expenses
+      final expenses = await _firebaseServices.getAllExpenses();
+
+      allExpenses.addAll(expenses ?? []);
+
+      // Notify the UI with the list of expenses
+      emit(AllExpensesLoadedState(expenses: expenses ?? []));
+    } catch (e) {
+      // Handle errors, e.g., emit an error state
+      emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
+    }
   }
 
   Future<void> saveExpense() async {

@@ -9,41 +9,49 @@ class FirebaseServices {
   final int _maxConversations = 4;
   final _firestoreInstance = FirebaseFirestore.instance;
 
+  final user = FirebaseAuth.instance.currentUser;
+
   DocumentReference? childrenDocRef;
 
-  // Future<List<ConversationModel>?> getAllConversations(String userId) async {
-  //   final List<ConversationModel> conversationData = [];
+  Future<List<Expense>?> getAllExpenses() async {
+    final List<Expense> allExpensesList = [];
+    if (user != null) {
+      final userId = user?.uid;
+      final expenseRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('expenses');
 
-  //   try {
-  //     final QuerySnapshot snapshot = await _firestoreInstance
-  //         .collection(FirebaseCollections.conversations)
-  //         .where('userId', isEqualTo: userId)
-  //         .orderBy('updatedAt', descending: true)
-  //         .get();
-  //     conversationData.addAll(
-  //       snapshot.docs.map(
-  //         (document) {
-  //           return ConversationModel.fromDocument(
-  //             document,
-  //           );
-  //         },
-  //       ),
-  //     );
+      try {
+        final querySnapshot = await expenseRef
+            .orderBy('date',
+                descending:
+                    true) // Replace 'timestamp' with the field you want to sort by
+            .get();
 
-  //     return conversationData;
-  //   } catch (error) {
-  //     log('Error retrieving conversations: $error');
-  //     return null;
-  //   }
-  // }
+        allExpensesList.addAll(
+          querySnapshot.docs.map(
+            (document) {
+              return Expense.fromSnapshot(
+                document,
+              );
+            },
+          ),
+        );
+
+        return allExpensesList;
+      } catch (e) {
+        print('Error getting expenses: $e');
+      }
+    } else {}
+    return null;
+  }
 
   Future<void> saveExpense(Expense expense) async {
     try {
-      final user = FirebaseAuth.instance.currentUser;
-
       if (user != null) {
-        final userId = user.uid;
-        final CollectionReference expenseRef = FirebaseFirestore.instance
+        final userId = user?.uid;
+        final CollectionReference expenseRef = _firestoreInstance
             .collection('users')
             .doc(userId)
             .collection('expenses');

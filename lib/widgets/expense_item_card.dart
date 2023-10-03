@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 
 class ExpenseItemCard extends StatelessWidget {
   final String expenseName;
-  final double expenseAmount;
+  final String expenseAmount;
 
   const ExpenseItemCard({
     super.key,
@@ -19,7 +19,7 @@ class ExpenseItemCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
         title: Text(expenseName),
-        subtitle: Text('\$$expenseAmount'),
+        subtitle: Text(expenseAmount),
         trailing: SizedBox(
           width: 100,
           child: Row(
