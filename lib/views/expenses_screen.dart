@@ -38,18 +38,23 @@ class ExpensesPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16.0),
                   Expanded(
-                    child: ListView.builder(
-                      itemCount: cubit.allExpenses
-                          .length, // Replace with the actual number of expenses.
-                      itemBuilder: (BuildContext context, int index) {
-                        // Replace with logic to display expense items.
-                        return ExpenseItemCard(
-                          // You can pass expense details to this widget.
-                          expenseName: cubit.allExpenses[index].description,
-                          expenseAmount: cubit.allExpenses[index].amount,
-                        );
-                      },
-                    ),
+                    child: state is LoadingState
+                        ? const Center(
+                            child: CircularProgressIndicator.adaptive(),
+                          )
+                        : ListView.builder(
+                            itemCount: cubit.allExpenses
+                                .length, // Replace with the actual number of expenses.
+                            itemBuilder: (BuildContext context, int index) {
+                              // Replace with logic to display expense items.
+                              return ExpenseItemCard(
+                                // You can pass expense details to this widget.
+                                expenseName:
+                                    cubit.allExpenses[index].description,
+                                expenseAmount: cubit.allExpenses[index].amount,
+                              );
+                            },
+                          ),
                   ),
                 ],
               ),

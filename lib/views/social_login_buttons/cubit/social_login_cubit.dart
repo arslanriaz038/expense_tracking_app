@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
 import 'package:expense_tracking_app/services/user_services.dart';
+import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -87,10 +88,8 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
         profilePictureUrl: userCredential.user!.photoURL,
         providerId: credential.providerId,
       );
-      if (user.name?.isEmpty ?? true) {
-        emit(SignUpSuccessNameSetupNeeded());
-        return;
-      }
+
+      MyPref.updateUserInfo(user);
 
       emit(LoginSuccess());
     } else {
