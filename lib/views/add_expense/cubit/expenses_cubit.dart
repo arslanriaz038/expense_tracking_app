@@ -13,8 +13,9 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  String selectedCategory = 'Food'; // Default category
-  DateTime selectedDate = DateTime.now(); // Default date
+  String selectedCategory = 'Food';
+  DateTime selectedDate = DateTime.now();
+  String? pickedImagePath;
 
   final List<Expense> allExpenses = [];
 
@@ -27,6 +28,13 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   void updateSelectedDate(DateTime date) {
     selectedDate = date;
     emit(DateUpdatedState(selectedDate));
+  }
+
+  void updatePickedImagePath(String imagePath) {
+    pickedImagePath = imagePath;
+    if (pickedImagePath != null) {
+      emit(PickedImagePathState(pickedImagePath!));
+    }
   }
 
   Future<void> getAllExpenses() async {
@@ -47,10 +55,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     try {
       emit(LoadingState());
 
-      // Call the function from FirebaseServices to delete the expense
       await _firebaseServices.deleteExpense(expenseId);
 
-      // Remove the deleted expense from the local list
       allExpenses.removeWhere((expense) => expense.id == expenseId);
 
       emit(ExpenseDeletedState(expenseId));
@@ -62,18 +68,27 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   Future<void> updateExpense(
     String expenseId,
   ) async {
-    Expense updatedExpense = Expense(
-        description: descriptionController.text,
-        amount: amountController.text,
-        date: selectedDate,
-        category: selectedCategory);
-    try {
-      // Call the function from FirebaseServices to update the expense
+    String? imageUrl;
 
+    emit(LoadingState());
+
+    if (pickedImagePath != null) {
+      imageUrl = await _firebaseServices.uploadReceiptImage(
+        pickedImagePath!,
+      );
+    }
+
+    Expense updatedExpense = Expense(
+      description: descriptionController.text,
+      amount: amountController.text,
+      date: selectedDate,
+      category: selectedCategory,
+      receiptImageUrl: imageUrl,
+    );
+    try {
       emit(LoadingState());
       await _firebaseServices.updateExpense(expenseId, updatedExpense);
 
-      // Update the local list with the updated expense
       final index =
           allExpenses.indexWhere((expense) => expense.id == expenseId);
       if (index != -1) {
@@ -88,11 +103,22 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   Future<void> saveExpense() async {
     try {
+      String? imageUrl;
+
+      emit(LoadingState());
+
+      if (pickedImagePath != null) {
+        imageUrl = await _firebaseServices.uploadReceiptImage(
+          pickedImagePath!,
+        );
+      }
       final expense = await _firebaseServices.saveExpense(Expense(
-          description: descriptionController.text,
-          amount: amountController.text,
-          date: selectedDate,
-          category: selectedCategory));
+        description: descriptionController.text,
+        amount: amountController.text,
+        date: selectedDate,
+        category: selectedCategory,
+        receiptImageUrl: imageUrl,
+      ));
 
       emit(SuccessState());
     } catch (e) {

@@ -1,9 +1,11 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracking_app/consts/firebase_constants.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseServices {
   final int _maxConversations = 4;
@@ -64,6 +66,28 @@ class FirebaseServices {
       print('Error saving expense to Firestore: $error');
       // Handle the error as needed (e.g., show an error message to the user).
     }
+  }
+
+  Future<String?> uploadReceiptImage(
+    String imagePath,
+  ) async {
+    final userId = user?.uid;
+
+    if (userId != null) {
+      final firebase_storage.Reference storageRef = firebase_storage
+          .FirebaseStorage.instance
+          .ref()
+          .child('receipts')
+          .child(userId)
+          .child(DateTime.now().millisecondsSinceEpoch.toString());
+      final firebase_storage.UploadTask uploadTask =
+          storageRef.putFile(File(imagePath));
+      await uploadTask.whenComplete(() => null);
+
+      final imageUrl = await storageRef.getDownloadURL();
+      return imageUrl;
+    }
+    return null;
   }
 
   Future<void> updateExpense(String expenseId, Expense updatedExpense) async {

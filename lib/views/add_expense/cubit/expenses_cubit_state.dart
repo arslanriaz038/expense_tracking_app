@@ -47,6 +47,15 @@ class ExpenseDeletedState extends ExpensesCubitState {
   List<Object> get props => [expenseId];
 }
 
+class PickedImagePathState extends ExpensesCubitState {
+  final String pickedImagePath;
+
+  const PickedImagePathState(this.pickedImagePath);
+
+  @override
+  List<Object> get props => [pickedImagePath];
+}
+
 class CategoryUpdatedState extends ExpensesCubitState {}
 
 class SuccessState extends ExpensesCubitState {}
