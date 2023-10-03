@@ -1,4 +1,5 @@
 import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +34,7 @@ class ExpenseItemCard extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => AddExpensePage(
                         expense: expense,
+                        cubit: cubit,
                       ),
                     ),
                   );
@@ -49,7 +51,14 @@ class ExpenseItemCard extends StatelessWidget {
             ],
           ),
         ),
-        onTap: () {},
+        onTap: () {
+          AppNavigator.push(
+              context,
+              AddExpensePage(
+                cubit: cubit,
+                expense: expense,
+              ));
+        },
       ),
     );
   }

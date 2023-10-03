@@ -1,3 +1,4 @@
+import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:expense_tracking_app/widgets/expense_item_card.dart';
@@ -60,11 +61,11 @@ class ExpensesPage extends StatelessWidget {
             ),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AddExpensePage(),
-                  ),
-                );
+                AppNavigator.push(
+                    context,
+                    AddExpensePage(
+                      cubit: cubit,
+                    ));
               },
               child: const Icon(Icons.add),
             ),

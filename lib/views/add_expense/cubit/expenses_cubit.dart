@@ -59,7 +59,14 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     }
   }
 
-  Future<void> updateExpense(String expenseId, Expense updatedExpense) async {
+  Future<void> updateExpense(
+    String expenseId,
+  ) async {
+    Expense updatedExpense = Expense(
+        description: descriptionController.text,
+        amount: amountController.text,
+        date: selectedDate,
+        category: selectedCategory);
     try {
       // Call the function from FirebaseServices to update the expense
 
@@ -84,7 +91,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       final expense = await _firebaseServices.saveExpense(Expense(
           description: descriptionController.text,
           amount: amountController.text,
-          date: DateTime.now(),
+          date: selectedDate,
           category: selectedCategory));
 
       emit(SuccessState());
