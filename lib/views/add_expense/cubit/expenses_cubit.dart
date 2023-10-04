@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
@@ -53,7 +54,12 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   Future<void> deleteExpense(String expenseId) async {
     try {
-      emit(LoadingState());
+      // emit(LoadingState());
+
+      allExpenses
+          .firstWhereOrNull((element) => element.id == expenseId)
+          ?.isLoading = true;
+      emit(AllExpensesLoadedState(expenses: allExpenses ?? []));
 
       await _firebaseServices.deleteExpense(expenseId);
 

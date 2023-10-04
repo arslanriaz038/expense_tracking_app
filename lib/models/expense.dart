@@ -1,12 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Expense {
-  final String? id; // Unique identifier for the expense.
+  final String? id;
   final String description;
   final String amount;
   final DateTime date;
   final String category;
-  final String? receiptImageUrl; // Optional receipt image URL.
+  final String? receiptImageUrl;
+  bool isLoading; // Changed 'isLoading' from final to non-final
 
   Expense({
     this.id,
@@ -15,9 +16,9 @@ class Expense {
     required this.date,
     required this.category,
     this.receiptImageUrl,
+    this.isLoading = false,
   });
 
-  // Convert an Expense object to a Map for Firestore.
   Map<String, dynamic> toMap() {
     return {
       'id': id,

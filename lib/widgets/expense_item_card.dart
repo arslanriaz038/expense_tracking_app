@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
@@ -40,14 +41,16 @@ class ExpenseItemCard extends StatelessWidget {
                   );
                 },
               ),
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () async {
-                  if (expense.id != null) {
-                    await cubit.deleteExpense(expense.id!);
-                  }
-                },
-              ),
+              expense.isLoading
+                  ? const CircularProgressIndicator.adaptive()
+                  : IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () async {
+                        if (expense.id != null) {
+                          await cubit.deleteExpense(expense.id!);
+                        }
+                      },
+                    ),
             ],
           ),
         ),
