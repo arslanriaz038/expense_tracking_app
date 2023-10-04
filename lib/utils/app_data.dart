@@ -20,7 +20,7 @@ class AppData {
 
   static UserModel? get currentUser => _user;
 
-  static void logOutUser() {
+  static void logOutUserMain() {
     _user = null;
     MyPref.logOutUser();
     FirebaseAuth.instance.signOut();

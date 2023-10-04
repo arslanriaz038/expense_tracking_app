@@ -13,9 +13,12 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   SocialLoginCubit() : super(SocialLoginCubitInitial());
 
   final UserServices userServices = UserServices();
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> signInWithGoogle() async {
     emit(LoadingState());
+    _googleSignIn.disconnect();
+
     try {
       final GoogleSignInAccount? googleSignInAccount =
           await GoogleSignIn().signIn();

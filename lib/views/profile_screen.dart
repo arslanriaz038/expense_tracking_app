@@ -1,4 +1,5 @@
 import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/utils/app_data.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/login_page.dart';
@@ -54,7 +55,7 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  MyPref.logOutUser();
+                  AppData.logOutUserMain();
                   AppNavigator.popUntilFirst(context);
                   AppNavigator.pushReplacement(context, const LoginPage());
                 },
