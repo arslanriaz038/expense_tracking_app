@@ -88,7 +88,7 @@ class _SplashPageState extends State<SplashPage>
               // curve: Curves.easeInOutBack,
               child: Hero(
                 tag: AppConstants.heroAnimationTagForN,
-                child: Assets.appIcons.expenses.image(),
+                child: Assets.appIcons.expenses.image(width: 250, height: 250),
               )),
         ),
       ),
