@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:equatable/equatable.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
+import 'package:expense_tracking_app/utils/helper_functions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -11,6 +12,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   ExpensesCubit() : super(ExpenseCubitInitial());
 
   final FirebaseServices _firebaseServices = FirebaseServices();
+  final formKey = GlobalKey<FormState>();
 
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -73,7 +75,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     }
   }
 
-  Future<void> updateExpense(
+  Future<void> _updateExpense(
     String expenseId,
   ) async {
     String? imageUrl;
@@ -110,6 +112,22 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   }
 
   Future<void> saveExpense() async {
+    if (formKey.currentState?.validate() ?? false) {
+      hideKeyBoard();
+      _saveExpense();
+    }
+  }
+
+  Future<void> updateExpense(
+    String expenseId,
+  ) async {
+    if (formKey.currentState?.validate() ?? false) {
+      hideKeyBoard();
+      _updateExpense(expenseId);
+    }
+  }
+
+  Future<void> _saveExpense() async {
     try {
       String? imageUrl;
 
