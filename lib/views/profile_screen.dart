@@ -1,22 +1,22 @@
-import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/login_page.dart';
 import 'package:expense_tracking_app/widgets/pie_chart_widget.dart';
-import 'package:expense_tracking_app/widgets/sector_data.dart';
 import 'package:expense_tracking_app/widgets/user_avatar.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({super.key, required this.expensesList});
+
+  final List<Expense> expensesList;
 
   @override
   Widget build(BuildContext context) {
-    final List<Expense> expenses = [
-      Expense("Food", 50.0),
-      // Add more expenses here
-    ];
+    // final List<Expense> expenses = [
+    //   Expense("Food", 50.0),
+    //   // Add more expenses here
+    // ];
     final bool isDarkMode =
         MediaQuery.of(context).platformBrightness == Brightness.dark;
 
@@ -28,9 +28,10 @@ class ProfileScreen extends StatelessWidget {
           children: [
             Column(
               children: [
-                const UserProfileAvatar(
+                UserProfileAvatar(
                   imageRadius: 60,
                   showOnlineIndicator: false,
+                  expensesList: expensesList,
                 ),
                 const SizedBox(
                   height: 8,
@@ -51,7 +52,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
-            PieChartWidget(industrySectors),
+            PieChartWidget(expensesList),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -75,9 +76,9 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class Expense {
-  final String category;
-  final double amount;
+// class Expense {
+//   final String category;
+//   final double amount;
 
-  Expense(this.category, this.amount);
-}
+//   Expense(this.category, this.amount);
+// }

@@ -26,10 +26,12 @@ class ExpensesPage extends StatelessWidget {
             appBar: AppBar(
               forceMaterialTransparency: true,
               title: const Text('Expenses'),
-              actions: const [
+              actions: [
                 Padding(
                   padding: EdgeInsets.only(right: 20.0),
-                  child: UserProfileAvatar(showOnlineIndicator: false),
+                  child: UserProfileAvatar(
+                      showOnlineIndicator: false,
+                      expensesList: cubit.allExpenses),
                 )
               ],
             ),
