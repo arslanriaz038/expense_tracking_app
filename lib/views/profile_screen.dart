@@ -2,7 +2,7 @@ import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/app_data.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
-import 'package:expense_tracking_app/views/login_page.dart';
+import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:expense_tracking_app/widgets/pie_chart_widget.dart';
 import 'package:expense_tracking_app/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +57,7 @@ class ProfileScreen extends StatelessWidget {
                 onPressed: () {
                   AppData.logOutUserMain();
                   AppNavigator.popUntilFirst(context);
-                  AppNavigator.pushReplacement(context, const LoginPage());
+                  AppNavigator.pushReplacement(context, const LoginScreen());
                 },
                 child: const Text("Log out"),
               ),
