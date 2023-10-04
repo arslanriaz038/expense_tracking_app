@@ -25,10 +25,11 @@ class ExpensesPage extends StatelessWidget {
           return Scaffold(
             appBar: AppBar(
               forceMaterialTransparency: true,
-              title: const Text('Expenses'),
+              title: const Text(' Track Expenses'),
+              centerTitle: true,
               actions: [
                 Padding(
-                  padding: EdgeInsets.only(right: 20.0),
+                  padding: const EdgeInsets.only(right: 20.0),
                   child: UserProfileAvatar(
                       showOnlineIndicator: false,
                       expensesList: cubit.allExpenses),

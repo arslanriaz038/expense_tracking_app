@@ -29,7 +29,9 @@ List<Sector> get industrySectors {
     Sector(
         color: Colors.blueGrey, value: randomNumbers[1], title: 'Automobile'),
     Sector(
-        color: Colors.deepPurpleAccent, value: randomNumbers[2], title: 'Food'),
+        color: Colors.deepPurpleAccent,
+        value: randomNumbers[2],
+        title: 'Grocery'),
     Sector(color: Colors.yellow, value: randomNumbers[3], title: 'Finance'),
     Sector(color: Colors.black, value: randomNumbers[4], title: 'Energy'),
     Sector(color: Colors.orange, value: randomNumbers[5], title: 'Agriculture'),

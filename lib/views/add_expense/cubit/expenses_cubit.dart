@@ -14,7 +14,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  String selectedCategory = 'Food';
+  String selectedCategory = 'Grocery';
   DateTime selectedDate = DateTime.now();
   String? pickedImagePath;
 

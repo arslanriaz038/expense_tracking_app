@@ -33,7 +33,7 @@ class AddExpensePage extends StatelessWidget {
       cubit.amountController.text = '';
       cubit.selectedDate = DateTime.now();
       cubit.pickedImagePath = null;
-      cubit.updateSelectedCategory('Food');
+      cubit.updateSelectedCategory('Grocery');
     }
 
     Future<void> pickImage() async {
@@ -108,7 +108,7 @@ class AddExpensePage extends StatelessWidget {
                       cubit.updateSelectedCategory(newValue);
                     },
                     items: <String>[
-                      'Food',
+                      'Grocery',
                       'Transportation',
                       'Entertainment',
                       'Other'

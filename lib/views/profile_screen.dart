@@ -14,7 +14,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // final List<Expense> expenses = [
-    //   Expense("Food", 50.0),
+    //   Expense("Grocery", 50.0),
     //   // Add more expenses here
     // ];
     final bool isDarkMode =
