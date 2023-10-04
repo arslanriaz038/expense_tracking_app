@@ -123,7 +123,8 @@ class AddExpensePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 32.0),
-                  if (expense?.receiptImageUrl == null)
+                  if (expense?.receiptImageUrl == null ||
+                      cubit.pickedImagePath == null)
                     ElevatedButton(
                       onPressed: () {
                         pickImage();
@@ -177,7 +178,8 @@ class AddExpensePage extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 32.0),
-                  Center(
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
                       onPressed: state is LoadingState
                           ? null
@@ -189,12 +191,17 @@ class AddExpensePage extends StatelessWidget {
                               } else {
                                 await cubit.saveExpense();
                               }
-
-                              AppNavigator.pop(context);
+                              if (context.mounted) {
+                                AppNavigator.pop(context);
+                              }
                             },
                       child: state is LoadingState
-                          ? const Center(
-                              child: CircularProgressIndicator.adaptive())
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: Center(
+                                  child: CircularProgressIndicator.adaptive()),
+                            )
                           : Text(expense != null
                               ? 'Update Expense'
                               : 'Save Expense'),

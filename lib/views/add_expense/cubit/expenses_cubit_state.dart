@@ -60,6 +60,8 @@ class CategoryUpdatedState extends ExpensesCubitState {}
 
 class SuccessState extends ExpensesCubitState {}
 
+class ExpenseAddedState extends ExpensesCubitState {}
+
 class FailedState extends ExpensesCubitState {
   final String? errorMessage;
 

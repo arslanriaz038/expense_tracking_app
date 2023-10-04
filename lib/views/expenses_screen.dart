@@ -14,7 +14,11 @@ class ExpensesPage extends StatelessWidget {
     return BlocProvider(
       create: (context) => ExpensesCubit()..getAllExpenses(),
       child: BlocConsumer<ExpensesCubit, ExpensesCubitState>(
-        listener: (context, state) {},
+        listener: (context, state) {
+          if (state is ExpenseAddedState) {
+            context.read<ExpensesCubit>().getAllExpenses();
+          }
+        },
         builder: (context, state) {
           final ExpensesCubit cubit = context.read<ExpensesCubit>();
 

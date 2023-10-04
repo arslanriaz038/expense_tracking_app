@@ -44,6 +44,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
       final expenses = await _firebaseServices.getAllExpenses();
 
+      allExpenses.clear();
+
       allExpenses.addAll(expenses ?? []);
 
       emit(AllExpensesLoadedState(expenses: expenses ?? []));
@@ -126,7 +128,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         receiptImageUrl: imageUrl,
       ));
 
-      emit(SuccessState());
+      emit(ExpenseAddedState());
     } catch (e) {
       const FailedState(errorMessage: 'Failed to Sign up');
     }
