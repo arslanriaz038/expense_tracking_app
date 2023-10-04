@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';

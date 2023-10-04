@@ -81,12 +81,12 @@ class _MyInputFieldState extends State<MyInputField> {
           borderSide: const BorderSide(color: ColorName.mercury),
         ),
         focusColor: ColorName.primaryColor,
-        hintStyle: TextStyle(
+        hintStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: ColorName.osloGray,
         ),
-        labelStyle: TextStyle(
+        labelStyle: const TextStyle(
           fontSize: 16,
           fontWeight: FontWeight.w500,
           color: ColorName.gray,

@@ -1,4 +1,3 @@
-import 'package:expense_tracking_app/gen/assets.gen.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/expenses_screen.dart';

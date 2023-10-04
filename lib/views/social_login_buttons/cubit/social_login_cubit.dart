@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'package:expense_tracking_app/services/firebase_services.dart';
 import 'package:expense_tracking_app/services/user_services.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:firebase_auth/firebase_auth.dart';

@@ -1,14 +1,11 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:expense_tracking_app/consts/firebase_constants.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseServices {
-  final int _maxConversations = 4;
   final _firestoreInstance = FirebaseFirestore.instance;
 
   final user = FirebaseAuth.instance.currentUser;
@@ -25,11 +22,8 @@ class FirebaseServices {
           .collection('expenses');
 
       try {
-        final querySnapshot = await expenseRef
-            .orderBy('date',
-                descending:
-                    true) // Replace 'timestamp' with the field you want to sort by
-            .get();
+        final querySnapshot =
+            await expenseRef.orderBy('date', descending: true).get();
 
         allExpensesList.addAll(
           querySnapshot.docs.map(
@@ -64,7 +58,6 @@ class FirebaseServices {
       }
     } catch (error) {
       print('Error saving expense to Firestore: $error');
-      // Handle the error as needed (e.g., show an error message to the user).
     }
   }
 
@@ -106,7 +99,6 @@ class FirebaseServices {
       }
     } catch (error) {
       print('Error updating expense in Firestore: $error');
-      // Handle the error as needed (e.g., show an error message to the user).
     }
   }
 
@@ -124,7 +116,6 @@ class FirebaseServices {
       }
     } catch (error) {
       print('Error deleting expense from Firestore: $error');
-      // Handle the error as needed (e.g., show an error message to the user).
     }
   }
 }

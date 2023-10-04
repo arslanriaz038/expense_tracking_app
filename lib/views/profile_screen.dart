@@ -13,10 +13,6 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final List<Expense> expenses = [
-    //   Expense("Grocery", 50.0),
-    //   // Add more expenses here
-    // ];
     final bool isDarkMode =
         MediaQuery.of(context).platformBrightness == Brightness.dark;
 
@@ -63,7 +59,6 @@ class ProfileScreen extends StatelessWidget {
                   AppNavigator.pushReplacement(context, const LoginPage());
                 },
                 child: const Text("Log out"),
-                // icon: Assets.appIcons.logOut.svg(),
               ),
             ),
             const SizedBox(
@@ -75,10 +70,3 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 }
-
-// class Expense {
-//   final String category;
-//   final double amount;
-
-//   Expense(this.category, this.amount);
-// }

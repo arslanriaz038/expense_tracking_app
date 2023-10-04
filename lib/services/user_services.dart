@@ -33,8 +33,6 @@ class UserServices {
         createdAt: Timestamp.now().toDate(),
         updatedAt: Timestamp.now().toDate(),
         providerId: providerId,
-        //!! required in future
-        // userCredit: AppConstants.initialCredit,
       );
       await _createUser(user);
       return user;
