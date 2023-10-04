@@ -4,7 +4,6 @@ import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 part 'social_login_cubit_state.dart';
@@ -16,12 +15,14 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<void> signInWithGoogle() async {
-    emit(LoadingState());
     _googleSignIn.disconnect();
+
+    emit(LoadingState());
 
     try {
       final GoogleSignInAccount? googleSignInAccount =
-          await GoogleSignIn().signIn();
+          await _googleSignIn.signIn();
+
       if (googleSignInAccount != null) {
         final GoogleSignInAuthentication googleSignInAuthentication =
             await googleSignInAccount.authentication;
@@ -30,6 +31,7 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
           accessToken: googleSignInAuthentication.accessToken,
           idToken: googleSignInAuthentication.idToken,
         );
+
         await _performSignUp(
           credential,
           name: googleSignInAccount.displayName,
@@ -44,12 +46,13 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
 
   Future<void> signInWithApple() async {
     emit(LoadingState());
+
     try {
       final AuthorizationCredentialAppleID appleIdCredential =
           await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName
+          AppleIDAuthorizationScopes.fullName,
         ],
       );
 
@@ -82,6 +85,7 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   }) async {
     final UserCredential userCredential =
         await FirebaseAuth.instance.signInWithCredential(credential);
+
     if (userCredential.user != null) {
       final user = await userServices.signUpUser(
         id: userCredential.user!.uid,
@@ -95,7 +99,7 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
 
       emit(LoginSuccess());
     } else {
-      const FailedState(errorMessage: 'Failed to Sign up');
+      emit(const FailedState(errorMessage: 'Failed to Sign up'));
     }
   }
 }
