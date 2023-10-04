@@ -150,9 +150,7 @@ class AddExpensePage extends StatelessWidget {
                       ),
                     if (expense?.receiptImageUrl != null ||
                         cubit.pickedImagePath != null)
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width / 2,
-                        height: 120,
+                      Center(
                         child: Stack(
                           children: [
                             ClipRRect(
@@ -160,12 +158,10 @@ class AddExpensePage extends StatelessWidget {
                               child: cubit.pickedImagePath != null
                                   ? Image.file(
                                       File(cubit.pickedImagePath!),
-                                      height: 120,
                                       fit: BoxFit.cover,
                                     )
                                   : Image.network(
                                       expense?.receiptImageUrl ?? '',
-                                      height: 120,
                                       fit: BoxFit.cover,
                                     ),
                             ),
