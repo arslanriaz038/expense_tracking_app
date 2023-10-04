@@ -2,7 +2,10 @@ import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/login_page.dart';
+import 'package:expense_tracking_app/widgets/pie_chart_widget.dart';
+import 'package:expense_tracking_app/widgets/sector_data.dart';
 import 'package:expense_tracking_app/widgets/user_avatar.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -10,8 +13,13 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<Expense> expenses = [
+      Expense("Food", 50.0),
+      // Add more expenses here
+    ];
     final bool isDarkMode =
         MediaQuery.of(context).platformBrightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(),
       body: Padding(
@@ -43,6 +51,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ],
             ),
+            PieChartWidget(industrySectors),
             const Spacer(),
             SizedBox(
               width: double.infinity,
@@ -64,4 +73,11 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
+
+class Expense {
+  final String category;
+  final double amount;
+
+  Expense(this.category, this.amount);
 }
