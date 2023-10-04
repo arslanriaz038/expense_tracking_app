@@ -140,14 +140,18 @@ class AddExpensePage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 32.0),
-                    if (expense?.receiptImageUrl == null ||
-                        cubit.pickedImagePath == null)
+                    if (expense?.receiptImageUrl == null &&
+                        cubit.pickedImagePath == null) ...[
                       ElevatedButton(
                         onPressed: () {
                           pickImage();
                         },
                         child: const Text('Attach Receipt Image - (Optional)'),
                       ),
+                      const SizedBox(
+                        height: 8,
+                      )
+                    ],
                     if (expense?.receiptImageUrl != null ||
                         cubit.pickedImagePath != null)
                       Center(
