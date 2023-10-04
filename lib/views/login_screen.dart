@@ -1,14 +1,48 @@
-import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/expenses_screen.dart';
 import 'package:expense_tracking_app/views/signup_screen.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/view/social_login_buttons.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
-import 'package:flutter/material.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final formKey = GlobalKey<FormState>();
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<void> _loginWithEmailAndPassword() async {
+    if (formKey.currentState?.validate() ?? false) {
+      try {
+        final String email = _emailController.text.trim();
+        final String password = _passwordController.text.trim();
+
+        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+
+        if (userCredential.user != null) {
+          AppNavigator.pushReplacement(context, const ExpensesPage());
+        }
+      } catch (e) {
+        AppAlerts.showErrorMessage(context, '$e');
+        print('Error signing in: $e');
+        // Handle login errors (e.g., show an error message to the user).
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,6 +51,7 @@ class LoginScreen extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Form(
+            key: formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -34,10 +69,11 @@ class LoginScreen extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .labelLarge
-                      ?.copyWith(color: ColorName.darGreyText),
+                      ?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 32),
                 MyInputField(
+                  controller: _emailController,
                   hintText: 'Email',
                   validator: (value) => AppFormFieldValidator.emailValidator(
                     value,
@@ -45,11 +81,12 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 MyInputField(
+                  controller: _passwordController,
                   hintText: 'Password',
                   isPassword: true,
                   validator: (value) =>
                       AppFormFieldValidator.emptyFieldValidator(
-                          value, 'Enter Password'),
+                          value, 'Enter Password '),
                 ),
                 const SizedBox(height: 16),
                 Align(
@@ -64,7 +101,7 @@ class LoginScreen extends StatelessWidget {
                       style: Theme.of(context)
                           .textTheme
                           .labelLarge
-                          ?.copyWith(color: ColorName.primaryColor),
+                          ?.copyWith(color: Colors.blue),
                     ),
                   ),
                 ),
@@ -73,8 +110,7 @@ class LoginScreen extends StatelessWidget {
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
                     onPressed: () {
-                      AppNavigator.pushReplacement(
-                          context, const ExpensesPage());
+                      _loginWithEmailAndPassword();
                     },
                     child: const Text('Login'),
                   ),
@@ -85,7 +121,7 @@ class LoginScreen extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .labelLarge
-                      ?.copyWith(color: ColorName.darGreyText),
+                      ?.copyWith(color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
                 const SocialLoginButtons(),
@@ -98,13 +134,13 @@ class LoginScreen extends StatelessWidget {
                         style: Theme.of(context).textTheme.labelLarge),
                     TextButton(
                       onPressed: () {
-                        // AppNavigator.pushReplacement(context, const SignUpPage());
+                        AppNavigator.pushReplacement(
+                            context, const SignupScreen());
                       },
                       child: Text(
                         'Sign Up',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: ColorName.primaryColor,
-                            fontWeight: FontWeight.bold),
+                            color: Colors.blue, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],

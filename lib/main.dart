@@ -1,3 +1,5 @@
+import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/utils/globals.dart';
 import 'package:expense_tracking_app/views/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -19,8 +21,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      navigatorKey: navigatorKey,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: ColorName.primaryColor),
         useMaterial3: true,
       ),
       home: const SplashPage(),
