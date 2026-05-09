@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "996074011655-8hhk3l38652ld6oojd92ak2n7d8hgpf0.apps.googleusercontent.com",
+          "client_id": "996074011655-1b4gsu9nev1lblul0hd8alaqug6hpr49.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.arslan.expense_tracking_app",
-            "certificate_hash": "fbaa4af78c73cf5c0d6adfc732f31831027519ef"
+            "certificate_hash": "c38c2a6ede28ef4f53afd54fb03e8cae16ecd0a9"
           }
         },
         {
@@ -27,6 +27,14 @@
           "android_info": {
             "package_name": "com.arslan.expense_tracking_app",
             "certificate_hash": "46ca325010a00930f8f31d2b08ed68dada51a3b2"
+          }
+        },
+        {
+          "client_id": "996074011655-imvnhl5t6jr32i3t1e2vkk94nhc2c66j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.arslan.expense_tracking_app",
+            "certificate_hash": "fbaa4af78c73cf5c0d6adfc732f31831027519ef"
           }
         },
         {
@@ -45,6 +53,49 @@
             {
               "client_id": "996074011655-venaeifgto2ff6h7502806l1q946b0d7.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "996074011655-at3j7riomssmpn0qqsuvmt1n967m72ve.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.expenseTrackingApp"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:996074011655:android:38c1c9b3d63fd60d073ea2",
+        "android_client_info": {
+          "package_name": "com.example.expense_tracking_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "996074011655-venaeifgto2ff6h7502806l1q946b0d7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwO0vlKe0J0WxL8rp4f6xWl6FmqJpjl3o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "996074011655-venaeifgto2ff6h7502806l1q946b0d7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "996074011655-at3j7riomssmpn0qqsuvmt1n967m72ve.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.expenseTrackingApp"
+              }
             }
           ]
         }
