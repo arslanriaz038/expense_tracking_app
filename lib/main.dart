@@ -1,13 +1,17 @@
+import 'package:expense_tracking_app/consts/google_sign_in_config.dart';
+import 'package:expense_tracking_app/firebase_options.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/globals.dart';
 import 'package:expense_tracking_app/views/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await GoogleSignIn.instance.initialize(serverClientId: kGoogleServerClientId);
   await GetStorage.init();
 
   runApp(const MyApp());

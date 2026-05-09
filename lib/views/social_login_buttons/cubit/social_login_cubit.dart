@@ -15,30 +15,22 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   Future<void> signInWithGoogle() async {
-    _googleSignIn.disconnect();
-
     emit(LoadingState());
 
     try {
-      final GoogleSignInAccount? googleSignInAccount =
+      final GoogleSignInAccount googleSignInAccount =
           await _googleSignIn.authenticate();
+      final GoogleSignInAuthentication googleSignInAuthentication =
+          await googleSignInAccount.authentication;
 
-      if (googleSignInAccount != null) {
-        final GoogleSignInAuthentication googleSignInAuthentication =
-            await googleSignInAccount.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleSignInAuthentication.idToken,
+      );
 
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          // accessToken: googleSignInAuthentication.idToken,
-          idToken: googleSignInAuthentication.idToken,
-        );
-
-        await _performSignUp(
-          credential,
-          name: googleSignInAccount.displayName,
-        );
-      } else {
-        emit(const FailedState());
-      }
+      await _performSignUp(
+        credential,
+        name: googleSignInAccount.displayName,
+      );
     } catch (e) {
       emit(FailedState(errorMessage: e.toString()));
     }
