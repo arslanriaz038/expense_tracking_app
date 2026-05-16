@@ -4,6 +4,7 @@ import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart
 import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class ExpenseItemCard extends StatelessWidget {
   final Expense expense;
@@ -16,13 +17,25 @@ class ExpenseItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ExpensesCubit cubit = context.read<ExpensesCubit>();
+    final formattedDate = DateFormat('MMM d, yyyy').format(expense.date);
 
     return Card(
       elevation: 3.0,
       margin: const EdgeInsets.symmetric(vertical: 8.0),
       child: ListTile(
         title: Text(expense.description),
-        subtitle: Text(expense.amount),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(expense.amount),
+            const SizedBox(height: 2),
+            Text(
+              '$formattedDate · ${expense.category}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        isThreeLine: true,
         trailing: SizedBox(
           width: 100,
           child: Row(
@@ -55,11 +68,12 @@ class ExpenseItemCard extends StatelessWidget {
         ),
         onTap: () {
           AppNavigator.push(
-              context,
-              AddExpensePage(
-                cubit: cubit,
-                expense: expense,
-              ));
+            context,
+            AddExpensePage(
+              cubit: cubit,
+              expense: expense,
+            ),
+          );
         },
       ),
     );
