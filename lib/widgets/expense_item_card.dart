@@ -81,9 +81,12 @@ class ExpenseItemCard extends StatelessWidget {
                 onPressed: () {
                   AppNavigator.push(
                     context,
-                    AddExpensePage(
-                      expense: expense,
-                      cubit: cubit,
+                    BlocProvider.value(
+                      value: cubit,
+                      child: AddExpensePage(
+                        expense: expense,
+                        cubit: cubit,
+                      ),
                     ),
                   );
                 },
@@ -115,9 +118,12 @@ class ExpenseItemCard extends StatelessWidget {
         onTap: () {
           AppNavigator.push(
             context,
-            AddExpensePage(
-              cubit: cubit,
-              expense: expense,
+            BlocProvider.value(
+              value: cubit,
+              child: AddExpensePage(
+                cubit: cubit,
+                expense: expense,
+              ),
             ),
           );
         },

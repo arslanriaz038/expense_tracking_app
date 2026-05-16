@@ -65,7 +65,10 @@ class ProfileScreen extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => showManageCategoriesSheet(context),
+                  onPressed: () => showManageCategoriesSheet(
+                        context,
+                        cubit: cubit,
+                      ),
                   icon: const Icon(Icons.category_outlined),
                   label: const Text('Manage categories'),
                 ),

@@ -172,7 +172,10 @@ class AddExpensePage extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton.icon(
-                        onPressed: () => showManageCategoriesSheet(context),
+                        onPressed: () => showManageCategoriesSheet(
+                              context,
+                              cubit: cubit,
+                            ),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                         label: const Text('Manage categories'),
                       ),

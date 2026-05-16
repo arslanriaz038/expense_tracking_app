@@ -35,7 +35,13 @@ class MainShellPageState extends State<MainShellPage> {
   void _openAddExpense(BuildContext context) {
     final cubit = context.read<ExpensesCubit>();
     cubit.resetForm();
-    AppNavigator.push(context, AddExpensePage(cubit: cubit));
+    AppNavigator.push(
+      context,
+      BlocProvider.value(
+        value: cubit,
+        child: AddExpensePage(cubit: cubit),
+      ),
+    );
   }
 
   Future<void> _onRefresh(BuildContext context) async {

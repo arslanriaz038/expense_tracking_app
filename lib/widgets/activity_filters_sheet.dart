@@ -10,6 +10,7 @@ Future<ExpenseListFilters?> showActivityFiltersSheet({
 }) {
   return showModalBottomSheet<ExpenseListFilters>(
     context: context,
+    useRootNavigator: false,
     isScrollControlled: true,
     showDragHandle: true,
     builder: (sheetContext) {

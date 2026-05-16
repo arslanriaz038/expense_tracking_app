@@ -71,7 +71,10 @@ class MoreTab extends StatelessWidget {
                   title: const Text('Manage categories'),
                   subtitle: const Text('Add or remove custom categories'),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => showManageCategoriesSheet(context),
+                  onTap: () => showManageCategoriesSheet(
+                        context,
+                        cubit: context.read<ExpensesCubit>(),
+                      ),
                 ),
                 const Divider(height: 1),
                 ListTile(
