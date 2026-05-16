@@ -32,6 +32,64 @@ class ExpenseListFilters {
     );
   }
 
+  bool get isDefault =>
+      dateFilter == ExpenseDateFilter.all &&
+      typeFilter == null &&
+      category == null;
+
+  /// Active filters excluding search (used for badge count).
+  int get activeFilterCount {
+    var count = 0;
+    if (dateFilter != ExpenseDateFilter.all) count++;
+    if (typeFilter != null) count++;
+    if (category != null) count++;
+    return count;
+  }
+
+  /// True when category is set or date is not a quick-filter preset.
+  bool get hasAdvancedFilters =>
+      category != null ||
+      (dateFilter != ExpenseDateFilter.all &&
+          dateFilter != ExpenseDateFilter.thisMonth);
+
+  ExpenseListFilters clearFilters({bool keepSearch = true}) {
+    return ExpenseListFilters(
+      searchQuery: keepSearch ? searchQuery : '',
+    );
+  }
+
+  List<ActiveFilterTag> activeTags() {
+    final tags = <ActiveFilterTag>[];
+    if (dateFilter != ExpenseDateFilter.all) {
+      tags.add(
+        ActiveFilterTag(
+          id: 'date',
+          label: dateFilter.label,
+          applyRemove: (f) => f.copyWith(dateFilter: ExpenseDateFilter.all),
+        ),
+      );
+    }
+    if (typeFilter != null) {
+      tags.add(
+        ActiveFilterTag(
+          id: 'type',
+          label: typeFilter!.label,
+          applyRemove: (f) => f.copyWith(clearTypeFilter: true),
+        ),
+      );
+    }
+    if (category != null) {
+      tags.add(
+        ActiveFilterTag(
+          id: 'category',
+          label: category!,
+          applyRemove: (f) => f.copyWith(clearCategory: true),
+        ),
+      );
+    }
+    return tags;
+  }
+
   List<Expense> apply(List<Expense> expenses, DateTime now) {
     final query = searchQuery.trim().toLowerCase();
 
@@ -53,6 +111,18 @@ class ExpenseListFilters {
       return true;
     }).toList();
   }
+}
+
+class ActiveFilterTag {
+  const ActiveFilterTag({
+    required this.id,
+    required this.label,
+    required this.applyRemove,
+  });
+
+  final String id;
+  final String label;
+  final ExpenseListFilters Function(ExpenseListFilters filters) applyRemove;
 }
 
 class ExpenseTotals {

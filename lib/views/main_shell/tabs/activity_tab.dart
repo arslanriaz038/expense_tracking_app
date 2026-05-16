@@ -4,6 +4,7 @@ import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/expense_date_filter.dart';
 import 'package:expense_tracking_app/utils/expense_list_filters.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
+import 'package:expense_tracking_app/widgets/activity_filters_sheet.dart';
 import 'package:expense_tracking_app/widgets/expense_item_card.dart';
 import 'package:expense_tracking_app/widgets/transaction_empty_state.dart';
 import 'package:flutter/material.dart';
@@ -27,12 +28,45 @@ class ActivityTab extends StatefulWidget {
 class ActivityTabState extends State<ActivityTab> {
   ExpenseListFilters _filters = const ExpenseListFilters();
   final _searchController = TextEditingController();
-  bool _filtersExpanded = false;
 
   void applyFilters(ExpenseListFilters filters) {
     setState(() {
       _filters = filters;
       _searchController.text = filters.searchQuery;
+    });
+  }
+
+  Future<void> _openFiltersSheet(BuildContext context) async {
+    final cubit = context.read<ExpensesCubit>();
+    final result = await showActivityFiltersSheet(
+      context: context,
+      initialFilters: _filters,
+      categories: cubit.allCategories,
+    );
+    if (result != null && mounted) {
+      applyFilters(
+        result.copyWith(searchQuery: _searchController.text),
+      );
+    }
+  }
+
+  void _toggleThisMonth() {
+    setState(() {
+      _filters = _filters.copyWith(
+        dateFilter: _filters.dateFilter == ExpenseDateFilter.thisMonth
+            ? ExpenseDateFilter.all
+            : ExpenseDateFilter.thisMonth,
+      );
+    });
+  }
+
+  void _toggleType(ExpenseType type) {
+    setState(() {
+      if (_filters.typeFilter == type) {
+        _filters = _filters.copyWith(clearTypeFilter: true);
+      } else {
+        _filters = _filters.copyWith(typeFilter: type);
+      }
     });
   }
 
@@ -65,6 +99,8 @@ class ActivityTabState extends State<ActivityTab> {
         );
         final sortedDates = grouped.keys.toList()
           ..sort((a, b) => b.compareTo(a));
+        final activeTags = _filters.activeTags();
+        final filterCount = _filters.activeFilterCount;
 
         return Scaffold(
           appBar: AppBar(
@@ -86,19 +122,19 @@ class ActivityTabState extends State<ActivityTab> {
                           decoration: InputDecoration(
                             hintText: 'Search description or category',
                             prefixIcon: const Icon(Icons.search),
-                            suffixIcon: _searchController.text.isNotEmpty
-                                ? IconButton(
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(
-                                        () => _filters = _filters.copyWith(
-                                          searchQuery: '',
-                                        ),
-                                      );
-                                    },
-                                    icon: const Icon(Icons.clear),
-                                  )
-                                : null,
+                            suffixIcon: _ActivitySearchSuffix(
+                              showClear: _searchController.text.isNotEmpty,
+                              filterCount: filterCount,
+                              onClearSearch: () {
+                                _searchController.clear();
+                                setState(
+                                  () => _filters = _filters.copyWith(
+                                    searchQuery: '',
+                                  ),
+                                );
+                              },
+                              onOpenFilters: () => _openFiltersSheet(context),
+                            ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -112,141 +148,82 @@ class ActivityTabState extends State<ActivityTab> {
                             );
                           },
                         ),
-                        const SizedBox(height: 8),
-                        InkWell(
-                          onTap: () {
-                            setState(() => _filtersExpanded = !_filtersExpanded);
-                          },
-                          borderRadius: BorderRadius.circular(8),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _filtersExpanded
-                                      ? Icons.expand_less
-                                      : Icons.expand_more,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Filters',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                                const Spacer(),
-                                if (_filters.dateFilter !=
-                                        ExpenseDateFilter.all ||
-                                    _filters.typeFilter != null ||
-                                    _filters.category != null)
-                                  Text(
-                                    'Active',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .primary,
-                                        ),
-                                  ),
-                              ],
-                            ),
+                        const SizedBox(height: 10),
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              FilterChip(
+                                label: const Text('This month'),
+                                selected: _filters.dateFilter ==
+                                    ExpenseDateFilter.thisMonth,
+                                onSelected: (_) => _toggleThisMonth(),
+                              ),
+                              const SizedBox(width: 8),
+                              FilterChip(
+                                label: const Text('Expenses'),
+                                selected:
+                                    _filters.typeFilter == ExpenseType.expense,
+                                onSelected: (_) =>
+                                    _toggleType(ExpenseType.expense),
+                              ),
+                              const SizedBox(width: 8),
+                              FilterChip(
+                                label: const Text('Income'),
+                                selected:
+                                    _filters.typeFilter == ExpenseType.income,
+                                onSelected: (_) =>
+                                    _toggleType(ExpenseType.income),
+                              ),
+                              const SizedBox(width: 8),
+                              FilterChip(
+                                label: const Text('More filters'),
+                                selected: _filters.hasAdvancedFilters,
+                                avatar: _filters.hasAdvancedFilters
+                                    ? Icon(
+                                        Icons.tune,
+                                        size: 18,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary,
+                                      )
+                                    : const Icon(Icons.tune, size: 18),
+                                onSelected: (_) => _openFiltersSheet(context),
+                              ),
+                            ],
                           ),
                         ),
-                        if (_filtersExpanded) ...[
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children:
-                                  ExpenseDateFilter.values.map((filter) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(right: 8),
-                                  child: FilterChip(
-                                    label: Text(filter.label),
-                                    selected: _filters.dateFilter == filter,
-                                    onSelected: (_) {
-                                      setState(
-                                        () => _filters = _filters.copyWith(
-                                          dateFilter: filter,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                FilterChip(
-                                  label: const Text('All types'),
-                                  selected: _filters.typeFilter == null,
-                                  onSelected: (_) {
-                                    setState(
-                                      () => _filters = _filters.copyWith(
-                                        clearTypeFilter: true,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                const SizedBox(width: 8),
-                                for (final type in ExpenseType.values)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: FilterChip(
-                                      label: Text(type.label),
-                                      selected: _filters.typeFilter == type,
-                                      onSelected: (_) {
+                        if (activeTags.isNotEmpty) ...[
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: activeTags.map((tag) {
+                                    return InputChip(
+                                      label: Text(tag.label),
+                                      onDeleted: () {
                                         setState(
-                                          () => _filters = _filters.copyWith(
-                                            typeFilter: type,
-                                          ),
+                                          () => _filters =
+                                              tag.applyRemove(_filters),
                                         );
                                       },
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                FilterChip(
-                                  label: const Text('All categories'),
-                                  selected: _filters.category == null,
-                                  onSelected: (_) {
-                                    setState(
-                                      () => _filters = _filters.copyWith(
-                                        clearCategory: true,
-                                      ),
                                     );
-                                  },
+                                  }).toList(),
                                 ),
-                                const SizedBox(width: 8),
-                                for (final category in cubit.allCategories)
-                                  Padding(
-                                    padding: const EdgeInsets.only(right: 8),
-                                    child: FilterChip(
-                                      label: Text(category),
-                                      selected: _filters.category == category,
-                                      onSelected: (_) {
-                                        setState(
-                                          () => _filters = _filters.copyWith(
-                                            category: category,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                              ],
-                            ),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  setState(
+                                    () => _filters = _filters.clearFilters(),
+                                  );
+                                },
+                                child: const Text('Clear'),
+                              ),
+                            ],
                           ),
                         ],
                         const SizedBox(height: 8),
@@ -319,6 +296,44 @@ class ActivityTabState extends State<ActivityTab> {
           ),
         );
       },
+    );
+  }
+}
+
+class _ActivitySearchSuffix extends StatelessWidget {
+  const _ActivitySearchSuffix({
+    required this.showClear,
+    required this.filterCount,
+    required this.onClearSearch,
+    required this.onOpenFilters,
+  });
+
+  final bool showClear;
+  final int filterCount;
+  final VoidCallback onClearSearch;
+  final VoidCallback onOpenFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showClear)
+          IconButton(
+            onPressed: onClearSearch,
+            icon: const Icon(Icons.clear),
+            tooltip: 'Clear search',
+          ),
+        Badge(
+          isLabelVisible: filterCount > 0,
+          label: Text('$filterCount'),
+          child: IconButton(
+            onPressed: onOpenFilters,
+            icon: const Icon(Icons.filter_list),
+            tooltip: 'Filters',
+          ),
+        ),
+      ],
     );
   }
 }
