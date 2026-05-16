@@ -1,5 +1,6 @@
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class MyInputField extends StatefulWidget {
   final String hintText;
@@ -11,6 +12,7 @@ class MyInputField extends StatefulWidget {
   final Widget? suffixIcon;
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   final bool? enable;
   final bool isPassword;
@@ -32,6 +34,7 @@ class MyInputField extends StatefulWidget {
     this.isPassword = false,
     this.validator,
     this.errorText,
+    this.inputFormatters,
   });
 
   @override
@@ -57,6 +60,7 @@ class _MyInputFieldState extends State<MyInputField> {
       style: widget.textStyle ??
           Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 18),
       keyboardType: widget.keyboardType,
+      inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         errorText: widget.errorText,
         suffixIcon: widget.isPassword

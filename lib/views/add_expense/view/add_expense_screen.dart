@@ -1,13 +1,16 @@
 import 'dart:io';
 
+import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/app_pickers.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 
@@ -16,25 +19,22 @@ class AddExpensePage extends StatelessWidget {
   final Expense? expense;
 
   const AddExpensePage({
-    Key? key,
+    super.key,
     this.expense,
     required this.cubit,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     if (expense != null) {
       cubit.descriptionController.text = expense!.description;
-      cubit.amountController.text = expense!.amount.toString();
+      cubit.amountController.text = expense!.amount;
       cubit.selectedDate = expense!.date;
       cubit.pickedImagePath = null;
       cubit.updateSelectedCategory(expense!.category);
+      cubit.updateSelectedType(expense!.type);
     } else {
-      cubit.descriptionController.text = '';
-      cubit.amountController.text = '';
-      cubit.selectedDate = DateTime.now();
-      cubit.pickedImagePath = null;
-      cubit.updateSelectedCategory('Grocery');
+      cubit.resetForm();
     }
 
     Future<void> pickImage() async {
@@ -47,54 +47,79 @@ class AddExpensePage extends StatelessWidget {
     return BlocConsumer<ExpensesCubit, ExpensesCubitState>(
       bloc: cubit,
       listener: (context, state) {
-        if (state is ExpenseAddedState) {
+        if (state is ExpenseAddedState || state is ExpenseUpdatedState) {
           AppNavigator.pop(context);
+        } else if (state is FailedState) {
+          AppAlerts.showErrorMessage(
+            context,
+            state.errorMessage ?? 'Something went wrong',
+          );
         }
       },
       builder: (context, state) {
-        String? pickedImagePath;
-
         return Scaffold(
           appBar: AppBar(
-            title: Text(expense != null ? 'Edit Expense' : 'Add Expense'),
+            title: Text(expense != null ? 'Edit transaction' : 'Add transaction'),
           ),
           body: SingleChildScrollView(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Form(
                 key: cubit.formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
+                  children: [
                     const Text(
-                      'Expense Details',
+                      'Details',
                       style: TextStyle(
-                        fontSize: 24.0,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 16.0),
+                    const SizedBox(height: 16),
+                    SegmentedButton<ExpenseType>(
+                      segments: const [
+                        ButtonSegment(
+                          value: ExpenseType.expense,
+                          label: Text('Expense'),
+                          icon: Icon(Icons.arrow_upward),
+                        ),
+                        ButtonSegment(
+                          value: ExpenseType.income,
+                          label: Text('Income'),
+                          icon: Icon(Icons.arrow_downward),
+                        ),
+                      ],
+                      selected: {cubit.selectedType},
+                      onSelectionChanged: (selection) {
+                        cubit.updateSelectedType(selection.first);
+                      },
+                    ),
+                    const SizedBox(height: 16),
                     MyInputField(
                       controller: cubit.descriptionController,
-                      hintText: 'Expense Description',
+                      hintText: 'Description',
                       validator: (value) =>
                           AppFormFieldValidator.emptyFieldValidator(
                         value,
-                        'Expense Name required',
+                        'Description is required',
                       ),
                     ),
-                    const SizedBox(height: 16.0),
+                    const SizedBox(height: 16),
                     MyInputField(
                       controller: cubit.amountController,
-                      keyboardType: TextInputType.number,
-                      hintText: 'Expense Amount',
-                      validator: (value) =>
-                          AppFormFieldValidator.emptyFieldValidator(
-                        value,
-                        'Expense Amount required',
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
                       ),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d*\.?\d{0,2}'),
+                        ),
+                      ],
+                      hintText: 'Amount',
+                      validator: AppFormFieldValidator.amountValidator,
                     ),
-                    const SizedBox(height: 16.0),
+                    const SizedBox(height: 16),
                     GestureDetector(
                       onTap: () async {
                         final pickedDate = await showDatePicker(
@@ -110,7 +135,7 @@ class AddExpensePage extends StatelessWidget {
                       },
                       child: Row(
                         children: [
-                          const Text('Expense Date: '),
+                          const Text('Date: '),
                           Text(
                             DateFormat('yyyy-MM-dd').format(cubit.selectedDate),
                             style: const TextStyle(fontWeight: FontWeight.bold),
@@ -118,40 +143,31 @@ class AddExpensePage extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16.0),
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: cubit.selectedCategory,
-                      onChanged: (String? newValue) {
-                        cubit.updateSelectedCategory(newValue);
-                      },
-                      items: <String>[
-                        'Grocery',
-                        'Transportation',
-                        'Entertainment',
-                        'Other'
-                      ].map((String value) {
-                        return DropdownMenuItem<String>(
-                          value: value,
-                          child: Text(value),
-                        );
-                      }).toList(),
+                      key: ValueKey(cubit.selectedCategory),
+                      initialValue: cubit.selectedCategory,
+                      onChanged: cubit.updateSelectedCategory,
+                      items: ExpenseCategories.all
+                          .map(
+                            (value) => DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            ),
+                          )
+                          .toList(),
                       decoration: const InputDecoration(
-                        labelText: 'Expense Category',
+                        labelText: 'Category',
+                        border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 32.0),
+                    const SizedBox(height: 32),
                     if (expense?.receiptImageUrl == null &&
-                        cubit.pickedImagePath == null) ...[
+                        cubit.pickedImagePath == null)
                       ElevatedButton(
-                        onPressed: () {
-                          pickImage();
-                        },
-                        child: const Text('Attach Receipt Image - (Optional)'),
+                        onPressed: pickImage,
+                        child: const Text('Attach receipt (optional)'),
                       ),
-                      const SizedBox(
-                        height: 8,
-                      )
-                    ],
                     if (expense?.receiptImageUrl != null ||
                         cubit.pickedImagePath != null)
                       Center(
@@ -162,10 +178,14 @@ class AddExpensePage extends StatelessWidget {
                               child: cubit.pickedImagePath != null
                                   ? Image.file(
                                       File(cubit.pickedImagePath!),
+                                      height: 200,
+                                      width: double.infinity,
                                       fit: BoxFit.cover,
                                     )
                                   : Image.network(
                                       expense?.receiptImageUrl ?? '',
+                                      height: 200,
+                                      width: double.infinity,
                                       fit: BoxFit.cover,
                                     ),
                             ),
@@ -181,12 +201,10 @@ class AddExpensePage extends StatelessWidget {
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(15),
                                   ),
-                                  child: const Center(
-                                    child: Icon(
-                                      Icons.edit,
-                                      color: ColorName.primaryColor,
-                                      size: 20,
-                                    ),
+                                  child: const Icon(
+                                    Icons.edit,
+                                    color: ColorName.primaryColor,
+                                    size: 20,
                                   ),
                                 ),
                               ),
@@ -194,16 +212,18 @@ class AddExpensePage extends StatelessWidget {
                           ],
                         ),
                       ),
-                    const SizedBox(height: 32.0),
+                    const SizedBox(height: 32),
                     SizedBox(
                       width: double.infinity,
-                      child: ElevatedButton(
+                      child: FilledButton(
                         onPressed: state is LoadingState
                             ? null
                             : () async {
                                 if (expense?.id != null) {
-                                  cubit.updateExpense(
+                                  await cubit.updateExpense(
                                     expense!.id!,
+                                    existingReceiptUrl:
+                                        expense!.receiptImageUrl,
                                   );
                                 } else {
                                   await cubit.saveExpense();
@@ -213,13 +233,13 @@ class AddExpensePage extends StatelessWidget {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: Center(
-                                    child:
-                                        CircularProgressIndicator.adaptive()),
+                                child: CircularProgressIndicator.adaptive(),
                               )
-                            : Text(expense != null
-                                ? 'Update Expense'
-                                : 'Save Expense'),
+                            : Text(
+                                expense != null
+                                    ? 'Update transaction'
+                                    : 'Save transaction',
+                              ),
                       ),
                     ),
                   ],

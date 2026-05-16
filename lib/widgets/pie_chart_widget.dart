@@ -1,72 +1,63 @@
 import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/utils/expense_list_filters.dart';
+import 'package:expense_tracking_app/utils/money_format.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 
 class PieChartWidget extends StatelessWidget {
   final List<Expense> expensesList;
 
-  const PieChartWidget(this.expensesList, {Key? key}) : super(key: key);
+  const PieChartWidget(this.expensesList, {super.key});
+
+  static const _colors = [
+    Color(0xFF4E79A7),
+    Color(0xFFF28E2B),
+    Color(0xFFE15759),
+    Color(0xFF76B7B2),
+    Color(0xFF59A14F),
+    Color(0xFFEDC948),
+    Color(0xFFB07AA1),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.0,
-      child: PieChart(PieChartData(
-        sections: _chartSections(expensesList),
-        centerSpaceRadius: 48.0,
-      )),
-    );
-  }
+    final categoryTotals = categorySpending(expensesList);
 
-  List<PieChartSectionData> _chartSections(List<Expense> expensesList) {
-    final Map<String, double> categoryToTotalAmount = {};
-
-    // Calculate the total amount for each category
-    for (var expense in expensesList) {
-      final category = expense.category;
-      final amount = expense.amount;
-
-      if (categoryToTotalAmount.containsKey(category)) {
-        categoryToTotalAmount[category] =
-            categoryToTotalAmount[category]! + (double.tryParse(amount) ?? 0);
-      } else {
-        categoryToTotalAmount[category] = double.tryParse(amount) ?? 0;
-      }
-    }
-
-    final List<PieChartSectionData> list = [];
-
-    // Generate pie chart sections based on categories and total amounts
-    int index = 0;
-    for (var category in categoryToTotalAmount.keys) {
-      const double radius = 40.0;
-      final double totalAmount = categoryToTotalAmount[category]!;
-      final data = PieChartSectionData(
-        color: _getRandomColor(index), // Generate a color for the category
-        value: totalAmount.toDouble(), // Cast the value to double
-        radius: radius,
-        title:
-            '$category\n\$${totalAmount.toStringAsFixed(2)}', // Display category and amount as the title
+    if (categoryTotals.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 24),
+        child: Text(
+          'No expense data to chart yet',
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
       );
-      list.add(data);
-      index++;
     }
 
-    return list;
-  }
+    final entries = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
 
-  Color _getRandomColor(int index) {
-    // You can generate random colors or use a predefined list of colors here
-    final List<Color> colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.red,
-      Colors.yellow,
-      Colors.orange,
-      Colors.purple,
-    ];
-
-    // Use modulo to loop through colors if there are more categories than colors
-    return colors[index % colors.length];
+    return AspectRatio(
+      aspectRatio: 1.2,
+      child: PieChart(
+        PieChartData(
+          sectionsSpace: 2,
+          centerSpaceRadius: 40,
+          sections: [
+            for (var i = 0; i < entries.length; i++)
+              PieChartSectionData(
+                color: _colors[i % _colors.length],
+                value: entries[i].value,
+                radius: 52,
+                title: '${entries[i].key}\n${MoneyFormat.format(entries[i].value)}',
+                titleStyle: const TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
   }
 }

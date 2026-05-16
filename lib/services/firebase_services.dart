@@ -2,120 +2,139 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:expense_tracking_app/models/expense.dart';
+import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseServices {
   final _firestoreInstance = FirebaseFirestore.instance;
-
   final user = FirebaseAuth.instance.currentUser;
 
-  DocumentReference? childrenDocRef;
+  CollectionReference<Map<String, dynamic>>? get _expensesRef {
+    final userId = user?.uid;
+    if (userId == null) return null;
+    return _firestoreInstance
+        .collection('users')
+        .doc(userId)
+        .collection('expenses');
+  }
 
-  Future<List<Expense>?> getAllExpenses() async {
-    final List<Expense> allExpensesList = [];
-    if (user != null) {
-      final userId = user?.uid;
-      final expenseRef = FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('expenses');
+  DocumentReference<Map<String, dynamic>>? get _userDocRef {
+    final userId = user?.uid;
+    if (userId == null) return null;
+    return _firestoreInstance.collection('users').doc(userId);
+  }
 
-      try {
-        final querySnapshot =
-            await expenseRef.orderBy('date', descending: true).get();
+  Stream<List<Expense>> watchExpenses() {
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) {
+      return Stream.value([]);
+    }
 
-        allExpensesList.addAll(
-          querySnapshot.docs.map(
-            (document) {
-              return Expense.fromSnapshot(
-                document,
-              );
-            },
-          ),
+    return expenseRef.orderBy('date', descending: true).snapshots().map(
+          (snapshot) => snapshot.docs
+              .map((document) => Expense.fromSnapshot(document))
+              .toList(),
         );
+  }
 
-        return allExpensesList;
-      } catch (e) {
-        print('Error getting expenses: $e');
-      }
-    } else {}
-    return null;
+  Future<List<Expense>> getAllExpenses() async {
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) return [];
+
+    try {
+      final querySnapshot =
+          await expenseRef.orderBy('date', descending: true).get();
+      return querySnapshot.docs
+          .map((document) => Expense.fromSnapshot(document))
+          .toList();
+    } catch (e) {
+      throw Exception('Error getting expenses: $e');
+    }
   }
 
   Future<void> saveExpense(Expense expense) async {
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) {
+      throw Exception('User not signed in');
+    }
+
     try {
-      if (user != null) {
-        final userId = user?.uid;
-        final CollectionReference expenseRef = _firestoreInstance
-            .collection('users')
-            .doc(userId)
-            .collection('expenses');
-
-        final Map<String, dynamic> expenseData = expense.toMap();
-
-        await expenseRef.add(expenseData);
-      }
+      await expenseRef.add(expense.toMap());
     } catch (error) {
-      print('Error saving expense to Firestore: $error');
+      throw Exception('Error saving expense: $error');
     }
   }
 
-  Future<String?> uploadReceiptImage(
-    String imagePath,
-  ) async {
+  Future<String?> uploadReceiptImage(String imagePath) async {
     final userId = user?.uid;
+    if (userId == null) return null;
 
-    if (userId != null) {
-      final firebase_storage.Reference storageRef = firebase_storage
-          .FirebaseStorage.instance
-          .ref()
-          .child('receipts')
-          .child(userId)
-          .child(DateTime.now().millisecondsSinceEpoch.toString());
-      final firebase_storage.UploadTask uploadTask =
-          storageRef.putFile(File(imagePath));
-      await uploadTask.whenComplete(() => null);
-
-      final imageUrl = await storageRef.getDownloadURL();
-      return imageUrl;
-    }
-    return null;
+    final storageRef = firebase_storage.FirebaseStorage.instance
+        .ref()
+        .child('receipts')
+        .child(userId)
+        .child(DateTime.now().millisecondsSinceEpoch.toString());
+    final uploadTask = storageRef.putFile(File(imagePath));
+    await uploadTask.whenComplete(() => null);
+    return storageRef.getDownloadURL();
   }
 
   Future<void> updateExpense(String expenseId, Expense updatedExpense) async {
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) {
+      throw Exception('User not signed in');
+    }
+
     try {
-      if (user != null) {
-        final userId = user?.uid;
-        final DocumentReference expenseRef = _firestoreInstance
-            .collection('users')
-            .doc(userId)
-            .collection('expenses')
-            .doc(expenseId);
-
-        final Map<String, dynamic> updatedExpenseData = updatedExpense.toMap();
-
-        await expenseRef.update(updatedExpenseData);
-      }
+      await expenseRef.doc(expenseId).update(updatedExpense.toMap());
     } catch (error) {
-      print('Error updating expense in Firestore: $error');
+      throw Exception('Error updating expense: $error');
     }
   }
 
   Future<void> deleteExpense(String expenseId) async {
-    try {
-      if (user != null) {
-        final userId = user?.uid;
-        final DocumentReference expenseRef = _firestoreInstance
-            .collection('users')
-            .doc(userId)
-            .collection('expenses')
-            .doc(expenseId);
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) {
+      throw Exception('User not signed in');
+    }
 
-        await expenseRef.delete();
-      }
+    try {
+      await expenseRef.doc(expenseId).delete();
     } catch (error) {
-      print('Error deleting expense from Firestore: $error');
+      throw Exception('Error deleting expense: $error');
+    }
+  }
+
+  Future<MonthlyBudget> getMonthlyBudget() async {
+    final userDoc = _userDocRef;
+    if (userDoc == null) return const MonthlyBudget();
+
+    try {
+      final snapshot = await userDoc.get();
+      final data = snapshot.data();
+      if (data == null) return const MonthlyBudget();
+      return MonthlyBudget.fromMap(
+        data['monthlyBudget'] as Map<String, dynamic>?,
+      );
+    } catch (e) {
+      throw Exception('Error loading budget: $e');
+    }
+  }
+
+  Future<void> saveMonthlyBudget(MonthlyBudget budget) async {
+    final userDoc = _userDocRef;
+    if (userDoc == null) {
+      throw Exception('User not signed in');
+    }
+
+    try {
+      await userDoc.set(
+        {'monthlyBudget': budget.toMap()},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      throw Exception('Error saving budget: $e');
     }
   }
 }

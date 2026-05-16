@@ -29,6 +29,17 @@ class AppFormFieldValidator {
     return errorMessage;
   }
 
+  static String? amountValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Amount is required';
+    }
+    final amount = double.tryParse(value.trim().replaceAll(',', ''));
+    if (amount == null || amount <= 0) {
+      return 'Enter a valid amount greater than 0';
+    }
+    return null;
+  }
+
   static String? nameValidator(String? name, String errorMessage) {
     if (name != null && name.isEmpty) {
       return 'Name is Required';

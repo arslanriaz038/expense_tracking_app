@@ -58,6 +58,33 @@ class PickedImagePathState extends ExpensesCubitState {
 
 class CategoryUpdatedState extends ExpensesCubitState {}
 
+class TypeUpdatedState extends ExpensesCubitState {
+  final ExpenseType type;
+
+  const TypeUpdatedState(this.type);
+
+  @override
+  List<Object> get props => [type];
+}
+
+class BudgetLoadedState extends ExpensesCubitState {
+  final MonthlyBudget budget;
+
+  const BudgetLoadedState(this.budget);
+
+  @override
+  List<Object> get props => [budget];
+}
+
+class BudgetSavedState extends ExpensesCubitState {
+  final MonthlyBudget budget;
+
+  const BudgetSavedState(this.budget);
+
+  @override
+  List<Object> get props => [budget];
+}
+
 class SuccessState extends ExpensesCubitState {}
 
 class ExpenseAddedState extends ExpensesCubitState {}
