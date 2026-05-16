@@ -129,6 +129,3 @@ class MainShellPageState extends State<MainShellPage> {
     );
   }
 }
-
-/// Backward-compatible alias for existing navigation imports.
-typedef ExpensesPage = MainShellPage;
