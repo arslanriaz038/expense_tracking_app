@@ -4,8 +4,8 @@ import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/expense_list_filters.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
+import 'package:expense_tracking_app/widgets/category_breakdown_chart.dart';
 import 'package:expense_tracking_app/widgets/expense_summary_banner.dart';
-import 'package:expense_tracking_app/widgets/pie_chart_widget.dart';
 import 'package:expense_tracking_app/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 
@@ -44,8 +44,10 @@ class ProfileScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             ExpenseSummaryBanner(totals: totals),
-            const SizedBox(height: 8),
-            PieChartWidget(expensesList),
+            const SizedBox(height: 12),
+            CategoryBreakdownChart(
+              categoryTotals: categorySpending(expensesList),
+            ),
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,
