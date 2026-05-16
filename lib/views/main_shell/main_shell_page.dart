@@ -71,6 +71,7 @@ class MainShellPageState extends State<MainShellPage> {
         child: Builder(
           builder: (shellContext) {
             return Scaffold(
+              extendBody: true,
               body: IndexedStack(
                 index: _currentIndex,
                 children: [
@@ -88,42 +89,119 @@ class MainShellPageState extends State<MainShellPage> {
                   const MoreTab(),
                 ],
               ),
-              bottomNavigationBar: NavigationBar(
-                selectedIndex: _currentIndex,
-                onDestinationSelected: (index) {
-                  setState(() => _currentIndex = index);
-                },
-                destinations: const [
-                  NavigationDestination(
-                    icon: Icon(Icons.home_outlined),
-                    selectedIcon: Icon(Icons.home),
-                    label: 'Home',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.receipt_long_outlined),
-                    selectedIcon: Icon(Icons.receipt_long),
-                    label: 'Activity',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.insights_outlined),
-                    selectedIcon: Icon(Icons.insights),
-                    label: 'Insights',
-                  ),
-                  NavigationDestination(
-                    icon: Icon(Icons.more_horiz),
-                    selectedIcon: Icon(Icons.more_horiz),
-                    label: 'More',
-                  ),
-                ],
-              ),
-              floatingActionButton: FloatingActionButton.extended(
+              floatingActionButton: FloatingActionButton(
                 onPressed: () => _openAddExpense(shellContext),
                 tooltip: 'Add transaction',
-                icon: const Icon(Icons.add),
-                label: const Text('Add'),
+                shape: const CircleBorder(),
+                child: const Icon(Icons.add),
+              ),
+              floatingActionButtonLocation:
+                  FloatingActionButtonLocation.centerDocked,
+              bottomNavigationBar: BottomAppBar(
+                shape: const CircularNotchedRectangle(),
+                notchMargin: 8,
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SafeArea(
+                  child: SizedBox(
+                    height: 56,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: _BottomNavItem(
+                            icon: Icons.home_outlined,
+                            selectedIcon: Icons.home,
+                            label: 'Home',
+                            selected: _currentIndex == 0,
+                            onTap: () => setState(() => _currentIndex = 0),
+                          ),
+                        ),
+                        Expanded(
+                          child: _BottomNavItem(
+                            icon: Icons.receipt_long_outlined,
+                            selectedIcon: Icons.receipt_long,
+                            label: 'Activity',
+                            selected: _currentIndex == 1,
+                            onTap: () => setState(() => _currentIndex = 1),
+                          ),
+                        ),
+                        const SizedBox(width: 56),
+                        Expanded(
+                          child: _BottomNavItem(
+                            icon: Icons.insights_outlined,
+                            selectedIcon: Icons.insights,
+                            label: 'Insights',
+                            selected: _currentIndex == 2,
+                            onTap: () => setState(() => _currentIndex = 2),
+                          ),
+                        ),
+                        Expanded(
+                          child: _BottomNavItem(
+                            icon: Icons.more_horiz,
+                            selectedIcon: Icons.more_horiz,
+                            label: 'More',
+                            selected: _currentIndex == 3,
+                            onTap: () => setState(() => _currentIndex = 3),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             );
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _BottomNavItem extends StatelessWidget {
+  const _BottomNavItem({
+    required this.icon,
+    required this.selectedIcon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final IconData selectedIcon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = selected ? colorScheme.primary : colorScheme.onSurfaceVariant;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(selected ? selectedIcon : icon, color: color, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: color,
+                      fontSize: 11,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );
