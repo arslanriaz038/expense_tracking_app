@@ -1,4 +1,3 @@
-import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:expense_tracking_app/utils/money_format.dart';
 import 'package:flutter/material.dart';
@@ -38,15 +37,14 @@ class BudgetProgressSection extends StatelessWidget {
                 spent: monthSpending,
                 limit: budget.overallLimit!,
               ),
-            for (final category in ExpenseCategories.all)
-              if (budget.categoryLimits[category] != null &&
-                  budget.categoryLimits[category]! > 0)
+            for (final entry in budget.categoryLimits.entries)
+              if (entry.value > 0)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: _BudgetBar(
-                    label: category,
-                    spent: categorySpending[category] ?? 0,
-                    limit: budget.categoryLimits[category]!,
+                    label: entry.key,
+                    spent: categorySpending[entry.key] ?? 0,
+                    limit: entry.value,
                   ),
                 ),
           ],

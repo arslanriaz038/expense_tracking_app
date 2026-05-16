@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/models/expense.dart';
@@ -8,6 +9,7 @@ import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/app_pickers.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
+import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -145,10 +147,16 @@ class AddExpensePage extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      key: ValueKey(cubit.selectedCategory),
-                      initialValue: cubit.selectedCategory,
+                      key: ValueKey(
+                        '${cubit.selectedCategory}_${cubit.allCategories.length}',
+                      ),
+                      initialValue: cubit.allCategories.contains(
+                            cubit.selectedCategory,
+                          )
+                          ? cubit.selectedCategory
+                          : cubit.allCategories.firstOrNull,
                       onChanged: cubit.updateSelectedCategory,
-                      items: ExpenseCategories.all
+                      items: cubit.allCategories
                           .map(
                             (value) => DropdownMenuItem<String>(
                               value: value,
@@ -161,7 +169,15 @@ class AddExpensePage extends StatelessWidget {
                         border: OutlineInputBorder(),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton.icon(
+                        onPressed: () => showManageCategoriesSheet(context),
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: const Text('Manage categories'),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     if (expense?.receiptImageUrl == null &&
                         cubit.pickedImagePath == null)
                       ElevatedButton(

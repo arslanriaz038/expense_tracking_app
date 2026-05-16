@@ -137,4 +137,47 @@ class FirebaseServices {
       throw Exception('Error saving budget: $e');
     }
   }
+
+  Stream<List<String>> watchCustomCategories() {
+    final userDoc = _userDocRef;
+    if (userDoc == null) {
+      return Stream.value([]);
+    }
+
+    return userDoc.snapshots().map((snapshot) {
+      final raw = snapshot.data()?['customCategories'];
+      if (raw is! List) return <String>[];
+      return raw.map((item) => item.toString()).toList();
+    });
+  }
+
+  Future<List<String>> getCustomCategories() async {
+    final userDoc = _userDocRef;
+    if (userDoc == null) return [];
+
+    try {
+      final snapshot = await userDoc.get();
+      final raw = snapshot.data()?['customCategories'];
+      if (raw is! List) return [];
+      return raw.map((item) => item.toString()).toList();
+    } catch (e) {
+      throw Exception('Error loading categories: $e');
+    }
+  }
+
+  Future<void> saveCustomCategories(List<String> categories) async {
+    final userDoc = _userDocRef;
+    if (userDoc == null) {
+      throw Exception('User not signed in');
+    }
+
+    try {
+      await userDoc.set(
+        {'customCategories': categories},
+        SetOptions(merge: true),
+      );
+    } catch (e) {
+      throw Exception('Error saving categories: $e');
+    }
+  }
 }

@@ -1,4 +1,3 @@
-import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
@@ -15,7 +14,7 @@ Future<void> showBudgetSettingsSheet(BuildContext context) {
         text: cubit.monthlyBudget.overallLimit?.toString() ?? '',
       );
       final categoryControllers = {
-        for (final category in ExpenseCategories.all)
+        for (final category in cubit.allCategories)
           category: TextEditingController(
             text: cubit.monthlyBudget.categoryLimits[category]?.toString() ?? '',
           ),
@@ -51,7 +50,7 @@ Future<void> showBudgetSettingsSheet(BuildContext context) {
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
-              for (final category in ExpenseCategories.all) ...[
+              for (final category in cubit.allCategories) ...[
                 MyInputField(
                   controller: categoryControllers[category]!,
                   hintText: '$category limit (optional)',

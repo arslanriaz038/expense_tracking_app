@@ -20,18 +20,26 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
-  String selectedCategory = ExpenseCategories.all.first;
+  String selectedCategory = ExpenseCategories.defaults.first;
   ExpenseType selectedType = ExpenseType.expense;
   DateTime selectedDate = DateTime.now();
   String? pickedImagePath;
 
   final List<Expense> allExpenses = [];
+  final List<String> customCategories = [];
   MonthlyBudget monthlyBudget = const MonthlyBudget();
 
   StreamSubscription<List<Expense>>? _expensesSubscription;
+  StreamSubscription<List<String>>? _categoriesSubscription;
+
+  List<String> get allCategories => ExpenseCategories.resolve(
+        customCategories: customCategories,
+        expenseCategories: allExpenses.map((e) => e.category).toList(),
+      );
 
   void startListening() {
     _expensesSubscription?.cancel();
+    _categoriesSubscription?.cancel();
     emit(LoadingState());
 
     _expensesSubscription = _firebaseServices.watchExpenses().listen(
@@ -39,12 +47,98 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         allExpenses
           ..clear()
           ..addAll(expenses);
+        _ensureSelectedCategoryValid();
         emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
       },
       onError: (Object e) {
         emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
       },
     );
+
+    _categoriesSubscription =
+        _firebaseServices.watchCustomCategories().listen(
+      (categories) {
+        customCategories
+          ..clear()
+          ..addAll(categories);
+        _ensureSelectedCategoryValid();
+        emit(CategoriesUpdatedState(allCategories));
+        if (allExpenses.isNotEmpty) {
+          emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
+        }
+      },
+      onError: (Object e) {
+        emit(FailedState(errorMessage: 'Failed to load categories: $e'));
+      },
+    );
+  }
+
+  Future<void> loadCategories() async {
+    try {
+      final categories = await _firebaseServices.getCustomCategories();
+      customCategories
+        ..clear()
+        ..addAll(categories);
+      _ensureSelectedCategoryValid();
+      emit(CategoriesUpdatedState(allCategories));
+    } catch (e) {
+      emit(FailedState(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> addCustomCategory(String name) async {
+    final normalized = ExpenseCategories.normalizeName(name);
+    if (normalized == null) return;
+
+    final error = ExpenseCategories.validateNewCategory(
+      normalized,
+      existingCategories: allCategories,
+    );
+    if (error != null) {
+      emit(FailedState(errorMessage: error));
+      return;
+    }
+
+    try {
+      final updated = [...customCategories, normalized]..sort();
+      await _firebaseServices.saveCustomCategories(updated);
+      customCategories
+        ..clear()
+        ..addAll(updated);
+      selectedCategory = normalized;
+      emit(CategoryAddedState(normalized));
+      emit(CategoriesUpdatedState(allCategories));
+    } catch (e) {
+      emit(FailedState(errorMessage: e.toString()));
+    }
+  }
+
+  Future<void> removeCustomCategory(String name) async {
+    if (ExpenseCategories.isDefault(name)) {
+      emit(const FailedState(errorMessage: 'Default categories cannot be removed'));
+      return;
+    }
+
+    try {
+      final updated = customCategories.where((c) => c != name).toList();
+      await _firebaseServices.saveCustomCategories(updated);
+      customCategories
+        ..clear()
+        ..addAll(updated);
+      _ensureSelectedCategoryValid();
+      emit(CategoryRemovedState(name));
+      emit(CategoriesUpdatedState(allCategories));
+    } catch (e) {
+      emit(FailedState(errorMessage: e.toString()));
+    }
+  }
+
+  void _ensureSelectedCategoryValid() {
+    final categories = allCategories;
+    if (categories.isEmpty) return;
+    if (!categories.contains(selectedCategory)) {
+      selectedCategory = categories.first;
+    }
   }
 
   Future<void> loadBudget() async {
@@ -96,6 +190,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       allExpenses
         ..clear()
         ..addAll(expenses);
+      _ensureSelectedCategoryValid();
       emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
     } catch (e) {
       emit(FailedState(errorMessage: 'Failed to refresh expenses: $e'));
@@ -190,7 +285,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   void resetForm() {
     descriptionController.clear();
     amountController.clear();
-    selectedCategory = ExpenseCategories.all.first;
+    selectedCategory = allCategories.first;
     selectedType = ExpenseType.expense;
     selectedDate = DateTime.now();
     pickedImagePath = null;
@@ -199,6 +294,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   @override
   Future<void> close() {
     _expensesSubscription?.cancel();
+    _categoriesSubscription?.cancel();
     descriptionController.dispose();
     amountController.dispose();
     return super.close();

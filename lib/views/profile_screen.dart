@@ -4,19 +4,31 @@ import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/expense_list_filters.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
+import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/category_breakdown_chart.dart';
 import 'package:expense_tracking_app/widgets/expense_summary_banner.dart';
+import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:expense_tracking_app/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key, required this.expensesList});
 
   final List<Expense> expensesList;
 
+  ExpensesCubit? _cubitOrNull(BuildContext context) {
+    try {
+      return BlocProvider.of<ExpensesCubit>(context, listen: false);
+    } catch (_) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final totals = calculateTotals(expensesList);
+    final cubit = _cubitOrNull(context);
 
     return Scaffold(
       appBar: AppBar(),
@@ -48,6 +60,17 @@ class ProfileScreen extends StatelessWidget {
             CategoryBreakdownChart(
               categoryTotals: categorySpending(expensesList),
             ),
+            if (cubit != null) ...[
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => showManageCategoriesSheet(context),
+                  icon: const Icon(Icons.category_outlined),
+                  label: const Text('Manage categories'),
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

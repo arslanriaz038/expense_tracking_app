@@ -9,6 +9,7 @@ import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart
 import 'package:expense_tracking_app/views/add_expense/view/add_expense_screen.dart';
 import 'package:expense_tracking_app/widgets/budget_progress_section.dart';
 import 'package:expense_tracking_app/widgets/budget_settings_sheet.dart';
+import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:expense_tracking_app/widgets/category_breakdown_chart.dart';
 import 'package:expense_tracking_app/widgets/expense_item_card.dart';
 import 'package:expense_tracking_app/widgets/expense_summary_banner.dart';
@@ -102,6 +103,11 @@ class _ExpensesPageState extends State<ExpensesPage> {
               centerTitle: true,
               actions: [
                 IconButton(
+                  tooltip: 'Manage categories',
+                  onPressed: () => showManageCategoriesSheet(context),
+                  icon: const Icon(Icons.category_outlined),
+                ),
+                IconButton(
                   tooltip: 'Budget settings',
                   onPressed: () => showBudgetSettingsSheet(context),
                   icon: const Icon(Icons.savings_outlined),
@@ -119,6 +125,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
               onRefresh: () async {
                 await cubit.refreshExpenses();
                 await cubit.loadBudget();
+                await cubit.loadCategories();
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -234,7 +241,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
                                   },
                                 ),
                                 const SizedBox(width: 8),
-                                for (final category in ExpenseCategories.all)
+                                for (final category in cubit.allCategories)
                                   Padding(
                                     padding: const EdgeInsets.only(right: 8),
                                     child: FilterChip(
