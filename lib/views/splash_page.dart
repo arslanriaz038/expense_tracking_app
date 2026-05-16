@@ -3,7 +3,7 @@ import 'package:expense_tracking_app/gen/assets.gen.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
-import 'package:expense_tracking_app/views/expenses_screen.dart';
+import 'package:expense_tracking_app/views/main_shell/main_shell_page.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,7 +30,7 @@ class _SplashPageState extends State<SplashPage>
   void openMainScreen(BuildContext context) {
     AppNavigator.pushReplacement(
       context,
-      const ExpensesPage(),
+      const MainShellPage(),
     );
   }
 
