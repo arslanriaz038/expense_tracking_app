@@ -21,6 +21,15 @@ class AuthSessionService {
   static final _userServices = UserServices();
   static final _googleSignIn = GoogleSignIn.instance;
 
+  /// Skips the next [AppLockGate] challenge after a fresh sign-in.
+  static bool _skipNextAppLock = false;
+
+  static bool consumeSkipNextAppLock() {
+    if (!_skipNextAppLock) return false;
+    _skipNextAppLock = false;
+    return true;
+  }
+
   static Future<UserModel?> restoreSession() async {
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
@@ -73,10 +82,12 @@ class AuthSessionService {
     );
 
     AppData.updateCurrentUser(user);
+    _skipNextAppLock = true;
     return user;
   }
 
   static Future<void> signOut() async {
+    _skipNextAppLock = false;
     try {
       await _googleSignIn.signOut();
     } catch (_) {}

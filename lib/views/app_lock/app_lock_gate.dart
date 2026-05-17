@@ -1,3 +1,4 @@
+import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/services/biometric_auth_service.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +33,17 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
   Future<void> _bootstrap() async {
     if (!MyPref.isBiometricLockEnabled()) {
       if (mounted) setState(() => _unlocked = true);
+      return;
+    }
+
+    // Fresh login/signup should not prompt immediately; lock on resume instead.
+    if (AuthSessionService.consumeSkipNextAppLock()) {
+      if (mounted) {
+        setState(() {
+          _unlocked = true;
+          _lockOnNextResume = true;
+        });
+      }
       return;
     }
 
