@@ -1,11 +1,16 @@
-import 'package:intl/intl.dart';
+import 'package:expense_tracking_app/models/app_currency.dart';
+import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 
 /// Formats numeric input with locale-aware thousands grouping and decimals.
 ///
 /// Examples (en_US): `1000` → `1,000`, `1234.5` → `1,234.5`
 class MoneyInputFormatter extends TextInputFormatter {
-  MoneyInputFormatter({String? locale}) : _locale = locale ?? Intl.getCurrentLocale();
+  MoneyInputFormatter({String? locale})
+      : _locale = locale ??
+            AppCurrencyRegistry.forCode(MyPref.getCurrencyCode())
+                .numberFormatLocale;
 
   /// Max digits before the decimal point (avoids int/double overflow).
   static const int maxWholeDigits = 12;

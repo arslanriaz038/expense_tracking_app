@@ -35,7 +35,9 @@ class _CurrencySettingTileState extends State<CurrencySettingTile> {
     return ListTile(
       leading: const Icon(Icons.payments_outlined),
       title: const Text('Currency'),
-      subtitle: Text('${_currency.name} (${_currency.code})'),
+      subtitle: Text(
+        '${_currency.name} (${_currency.code}) · ${_currency.formatExample}',
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

@@ -142,37 +142,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    ListenableBuilder(
-                      listenable: CurrencyNotifier.instance,
-                      builder: (context, _) {
-                        final currency = AppCurrencyRegistry.forCode(
-                          MyPref.getCurrencyCode(),
-                        );
-                        return MyInputField(
-                          controller: cubit.amountController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          inputFormatters: [MoneyFormat.inputFormatter],
-                          hintText: 'Amount',
-                          validator: AppFormFieldValidator.amountValidator,
-                          prefix: Padding(
-                            padding: const EdgeInsets.only(left: 12, right: 4),
-                            child: Text(
-                              currency.symbol,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: ColorName.gray,
-                                  ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    _AmountInputField(cubit: cubit),
                     const SizedBox(height: 16),
                     TransactionDatePicker(
                       selectedDate: cubit.selectedDate,
@@ -305,6 +275,73 @@ class _AddExpensePageState extends State<AddExpensePage> {
           ),
         );
       },
+    );
+  }
+}
+
+class _AmountInputField extends StatefulWidget {
+  const _AmountInputField({required this.cubit});
+
+  final ExpensesCubit cubit;
+
+  @override
+  State<_AmountInputField> createState() => _AmountInputFieldState();
+}
+
+class _AmountInputFieldState extends State<_AmountInputField> {
+  @override
+  void initState() {
+    super.initState();
+    CurrencyNotifier.instance.addListener(_onCurrencyChanged);
+  }
+
+  @override
+  void dispose() {
+    CurrencyNotifier.instance.removeListener(_onCurrencyChanged);
+    super.dispose();
+  }
+
+  void _onCurrencyChanged() {
+    _reformatAmount();
+    setState(() {});
+  }
+
+  void _reformatAmount() {
+    final controller = widget.cubit.amountController;
+    final raw = controller.text;
+    if (raw.isEmpty) return;
+
+    final formatted = MoneyFormat.formatForInput(raw);
+    if (formatted == raw) return;
+
+    controller.value = TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currency = AppCurrencyRegistry.forCode(MyPref.getCurrencyCode());
+
+    return MyInputField(
+      key: ValueKey('amount_${currency.code}'),
+      controller: widget.cubit.amountController,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [MoneyFormat.inputFormatter],
+      hintText: 'Amount',
+      validator: AppFormFieldValidator.amountValidator,
+      prefix: Padding(
+        padding: const EdgeInsets.only(left: 12, right: 4),
+        child: Text(
+          currency.symbol,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: ColorName.gray,
+              ),
+        ),
+      ),
     );
   }
 }

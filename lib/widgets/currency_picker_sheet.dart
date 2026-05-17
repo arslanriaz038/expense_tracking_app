@@ -100,7 +100,9 @@ class _CurrencyPickerSheetState extends State<_CurrencyPickerSheet> {
 
                         return ListTile(
                           title: Text(currency.displayLabel),
-                          subtitle: Text(currency.listSubtitle),
+                          subtitle: Text(
+                            '${currency.listSubtitle} · ${currency.formatExample}',
+                          ),
                           trailing: selected
                               ? Icon(
                                   Icons.check_circle,

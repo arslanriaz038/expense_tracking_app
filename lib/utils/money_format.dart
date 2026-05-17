@@ -10,10 +10,10 @@ class MoneyFormat {
   /// Largest amount allowed in inputs (12 whole digits + cents).
   static const double maxAmount = 999999999999.99;
 
-  static String get _locale => Intl.getCurrentLocale();
-
   static AppCurrency get _currency =>
       AppCurrencyRegistry.forCode(MyPref.getCurrencyCode());
+
+  static String get _locale => _currency.numberFormatLocale;
 
   static bool _hasCents(double amount) {
     final cents = (amount.abs() * 100).round();
@@ -21,6 +21,7 @@ class MoneyFormat {
   }
 
   static NumberFormat _formatterFor(double amount) => NumberFormat.currency(
+        locale: _locale,
         symbol: _currency.symbol,
         decimalDigits: _hasCents(amount) ? 2 : 0,
       );
@@ -28,7 +29,8 @@ class MoneyFormat {
   static NumberFormat get _inputNumberFormat =>
       NumberFormat('#,##0.##', _locale);
 
-  static TextInputFormatter get inputFormatter => MoneyInputFormatter();
+  static TextInputFormatter get inputFormatter =>
+      MoneyInputFormatter(locale: _locale);
 
   static String format(double amount) => _formatterFor(amount).format(amount);
 
@@ -67,10 +69,8 @@ class MoneyFormat {
       final amount = _inputNumberFormat.parse(trimmed);
       return amount.toDouble();
     } catch (_) {
-      // Fallback for legacy values saved without locale-aware formatting.
-      final cleaned =
-          trimmed.replaceAll(RegExp(r'[^\d.,\-]'), '').replaceAll(',', '');
-      return double.tryParse(cleaned);
+      // Fallback for plain numeric strings (e.g. legacy storage).
+      return double.tryParse(trimmed);
     }
   }
 }
