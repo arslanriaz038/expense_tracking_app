@@ -11,6 +11,8 @@ class ExpenseCubitInitial extends ExpensesCubitState {}
 
 class LoadingState extends ExpensesCubitState {}
 
+class ExpenseSubmittingState extends ExpensesCubitState {}
+
 class AllExpensesLoadedState extends ExpensesCubitState {
   final List<Expense> expenses;
 

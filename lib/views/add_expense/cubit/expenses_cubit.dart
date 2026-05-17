@@ -33,6 +33,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   StreamSubscription<List<Expense>>? _expensesSubscription;
   StreamSubscription<List<String>>? _categoriesSubscription;
 
+  bool _isSubmittingExpense = false;
+
   List<String> get allCategories => ExpenseCategories.resolve(
         customCategories: customCategories,
         expenseCategories: allExpenses.map((e) => e.category).toList(),
@@ -55,7 +57,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
           ..clear()
           ..addAll(expenses);
         _ensureSelectedCategoryValid();
-        emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
+        _emitExpensesLoadedIfIdle();
       },
       onError: (Object e) {
         if (_isTransientFirestoreError(e)) return;
@@ -71,15 +73,19 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
           ..addAll(categories);
         _ensureSelectedCategoryValid();
         emit(CategoriesUpdatedState(allCategories));
-        if (allExpenses.isNotEmpty) {
-          emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
-        }
+        _emitExpensesLoadedIfIdle();
       },
       onError: (Object e) {
         if (_isTransientFirestoreError(e)) return;
         emit(FailedState(errorMessage: 'Failed to load categories: $e'));
       },
     );
+  }
+
+  void _emitExpensesLoadedIfIdle() {
+    if (_isSubmittingExpense) return;
+    if (allExpenses.isEmpty) return;
+    emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
   }
 
   bool _isTransientFirestoreError(Object error) {
@@ -259,7 +265,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   }
 
   Future<void> _updateExpense(String expenseId, {String? existingReceiptUrl}) async {
-    emit(LoadingState());
+    _isSubmittingExpense = true;
+    emit(ExpenseSubmittingState());
 
     final updatedExpense = Expense(
       description: descriptionController.text.trim(),
@@ -294,6 +301,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       );
     } catch (e) {
       emit(FailedState(errorMessage: 'Failed to update expense: $e'));
+    } finally {
+      _isSubmittingExpense = false;
     }
   }
 
@@ -314,9 +323,10 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   }
 
   Future<void> _saveExpense() async {
-    try {
-      emit(LoadingState());
+    _isSubmittingExpense = true;
+    emit(ExpenseSubmittingState());
 
+    try {
       final result = await _firebaseServices.saveExpense(
         Expense(
           description: descriptionController.text.trim(),
@@ -342,6 +352,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       emit(ExpenseAddedState(syncMessage: syncMessage));
     } catch (e) {
       emit(FailedState(errorMessage: 'Failed to save expense: $e'));
+    } finally {
+      _isSubmittingExpense = false;
     }
   }
 

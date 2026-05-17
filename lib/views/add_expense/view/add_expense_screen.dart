@@ -87,6 +87,8 @@ class _AddExpensePageState extends State<AddExpensePage> {
         }
       },
       builder: (context, state) {
+        final isSubmitting = state is ExpenseSubmittingState;
+
         return Scaffold(
           appBar: AppBar(
             title:
@@ -245,7 +247,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: state is LoadingState
+                        onPressed: isSubmitting
                             ? null
                             : () async {
                                 if (!(_formKey.currentState?.validate() ??
@@ -262,7 +264,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                   await cubit.saveExpense();
                                 }
                               },
-                        child: state is LoadingState
+                        child: isSubmitting
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
