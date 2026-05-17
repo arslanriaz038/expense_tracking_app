@@ -7,7 +7,9 @@ import 'package:expense_tracking_app/views/main_shell/tabs/activity_tab.dart';
 import 'package:expense_tracking_app/views/main_shell/tabs/home_tab.dart';
 import 'package:expense_tracking_app/views/main_shell/tabs/insights_tab.dart';
 import 'package:expense_tracking_app/views/main_shell/tabs/more_tab.dart';
+import 'package:expense_tracking_app/widgets/confirm_exit_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class MainShellPage extends StatefulWidget {
@@ -51,6 +53,18 @@ class MainShellPageState extends State<MainShellPage> {
     await cubit.loadCategories();
   }
 
+  Future<void> _onBackPressed(BuildContext context) async {
+    if (_currentIndex != 0) {
+      setState(() => _currentIndex = 0);
+      return;
+    }
+
+    final shouldExit = await showConfirmExitDialog(context);
+    if (shouldExit && context.mounted) {
+      SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -76,7 +90,13 @@ class MainShellPageState extends State<MainShellPage> {
         },
         child: Builder(
           builder: (shellContext) {
-            return Scaffold(
+            return PopScope(
+              canPop: false,
+              onPopInvokedWithResult: (didPop, _) {
+                if (didPop) return;
+                _onBackPressed(shellContext);
+              },
+              child: Scaffold(
               extendBody: true,
               body: IndexedStack(
                 index: _currentIndex,
@@ -154,6 +174,7 @@ class MainShellPageState extends State<MainShellPage> {
                   ),
                 ),
               ),
+            ),
             );
           },
         ),
