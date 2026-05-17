@@ -3,7 +3,7 @@ import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
-import 'package:expense_tracking_app/views/main_shell/main_shell_page.dart';
+import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/signup_screen.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/view/social_login_buttons.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (userCredential.user != null) {
-          AppNavigator.pushReplacement(context, const MainShellPage());
+          AppNavigator.pushReplacement(context, const AuthenticatedHome());
         }
       } catch (e) {
         AppAlerts.showErrorMessage(context, '$e');

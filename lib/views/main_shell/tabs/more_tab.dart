@@ -3,6 +3,7 @@ import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
+import 'package:expense_tracking_app/widgets/biometric_lock_tile.dart';
 import 'package:expense_tracking_app/widgets/budget_settings_sheet.dart';
 import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:flutter/material.dart';
@@ -84,6 +85,8 @@ class MoreTab extends StatelessWidget {
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => showBudgetSettingsSheet(context),
                 ),
+                const Divider(height: 1),
+                const BiometricLockTile(),
               ],
             ),
           ),

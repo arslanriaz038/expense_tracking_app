@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:expense_tracking_app/gen/assets.gen.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
-import 'package:expense_tracking_app/views/main_shell/main_shell_page.dart';
+import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/cubit/social_login_cubit.dart';
 import 'package:expense_tracking_app/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ class SocialLoginButtons extends StatelessWidget {
   });
 
   void _openMainScreen(BuildContext context) =>
-      AppNavigator.pushReplacement(context, const MainShellPage());
+      AppNavigator.pushReplacement(context, const AuthenticatedHome());
 
   @override
   Widget build(BuildContext context) {

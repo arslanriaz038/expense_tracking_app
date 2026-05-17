@@ -35,4 +35,15 @@ class MyPref {
   static void logOutUser() {
     _storage.remove(MyPreferencesConstants.currentUser);
   }
+
+  static bool isBiometricLockEnabled() {
+    return _storage.read(MyPreferencesConstants.biometricLockEnabled) == true;
+  }
+
+  static Future<void> setBiometricLockEnabled(bool enabled) async {
+    await _storage.write(
+      MyPreferencesConstants.biometricLockEnabled,
+      enabled,
+    );
+  }
 }
