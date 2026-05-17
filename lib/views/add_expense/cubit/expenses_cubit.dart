@@ -8,6 +8,7 @@ import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
 import 'package:expense_tracking_app/services/pending_receipt_service.dart';
 import 'package:expense_tracking_app/utils/helper_functions.dart';
+import 'package:expense_tracking_app/utils/money_format.dart';
 import 'package:expense_tracking_app/utils/network_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -278,7 +279,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
     final updatedExpense = Expense(
       description: descriptionController.text.trim(),
-      amount: amountController.text.trim(),
+      amount: MoneyFormat.normalizeForStorage(amountController.text),
       date: selectedDate,
       category: selectedCategory,
       type: selectedType,
@@ -338,7 +339,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       final result = await _firebaseServices.saveExpense(
         Expense(
           description: descriptionController.text.trim(),
-          amount: amountController.text.trim(),
+          amount: MoneyFormat.normalizeForStorage(amountController.text),
           date: selectedDate,
           category: selectedCategory,
           type: selectedType,

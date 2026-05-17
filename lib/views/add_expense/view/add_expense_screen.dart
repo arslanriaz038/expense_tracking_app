@@ -11,12 +11,12 @@ import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/app_pickers.dart';
+import 'package:expense_tracking_app/utils/money_format.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:expense_tracking_app/widgets/transaction_date_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class AddExpensePage extends StatefulWidget {
@@ -48,7 +48,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
   void _initializeForm() {
     if (expense != null) {
       cubit.descriptionController.text = expense!.description;
-      cubit.amountController.text = expense!.amount;
+      cubit.amountController.text = MoneyFormat.formatForInput(expense!.amount);
       cubit.updateSelectedDate(expense!.date);
       cubit.pickedImagePath = null;
       cubit.updateSelectedCategory(expense!.category);
@@ -153,11 +153,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          inputFormatters: [
-                            FilteringTextInputFormatter.allow(
-                              RegExp(r'^\d*\.?\d{0,2}'),
-                            ),
-                          ],
+                          inputFormatters: [MoneyFormat.inputFormatter],
                           hintText: 'Amount',
                           validator: AppFormFieldValidator.amountValidator,
                           prefix: Padding(

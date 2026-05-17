@@ -1,9 +1,13 @@
 import 'package:expense_tracking_app/models/app_currency.dart';
+import 'package:expense_tracking_app/utils/money_input_formatter.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 class MoneyFormat {
   MoneyFormat._();
+
+  static String get _locale => Intl.getCurrentLocale();
 
   static AppCurrency get _currency =>
       AppCurrencyRegistry.forCode(MyPref.getCurrencyCode());
@@ -18,6 +22,11 @@ class MoneyFormat {
         decimalDigits: _hasCents(amount) ? 2 : 0,
       );
 
+  static NumberFormat get _inputNumberFormat =>
+      NumberFormat('#,##0.##', _locale);
+
+  static TextInputFormatter get inputFormatter => MoneyInputFormatter();
+
   static String format(double amount) => _formatterFor(amount).format(amount);
 
   static String formatSigned(double amount, {required bool isIncome}) {
@@ -25,10 +34,40 @@ class MoneyFormat {
     return '$prefix${_formatterFor(amount).format(amount.abs())}';
   }
 
+  /// Formats a stored or raw amount string for display in an input field.
+  static String formatForInput(String? value) {
+    final amount = parse(value);
+    if (amount == null) return value?.trim() ?? '';
+
+    if (_hasCents(amount)) {
+      return NumberFormat('#,##0.00', _locale).format(amount);
+    }
+    return NumberFormat('#,##0', _locale).format(amount);
+  }
+
+  /// Plain numeric string for persistence (no grouping separators).
+  static String normalizeForStorage(String value) {
+    final amount = parse(value);
+    if (amount == null) return value.trim();
+
+    if (_hasCents(amount)) {
+      return amount.toStringAsFixed(2);
+    }
+    return amount.truncate().toString();
+  }
+
   static double? parse(String? value) {
     if (value == null || value.trim().isEmpty) return null;
-    final cleaned =
-        value.replaceAll(RegExp(r'[^\d.,\-]'), '').replaceAll(',', '');
-    return double.tryParse(cleaned);
+
+    final trimmed = value.trim();
+    try {
+      final amount = _inputNumberFormat.parse(trimmed);
+      return amount.toDouble();
+    } catch (_) {
+      // Fallback for legacy values saved without locale-aware formatting.
+      final cleaned =
+          trimmed.replaceAll(RegExp(r'[^\d.,\-]'), '').replaceAll(',', '');
+      return double.tryParse(cleaned);
+    }
   }
 }

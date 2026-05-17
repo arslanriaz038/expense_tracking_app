@@ -1,3 +1,5 @@
+import 'package:expense_tracking_app/utils/money_format.dart';
+
 class AppFormFieldValidator {
   AppFormFieldValidator._();
 
@@ -33,7 +35,7 @@ class AppFormFieldValidator {
     if (value == null || value.trim().isEmpty) {
       return 'Amount is required';
     }
-    final amount = double.tryParse(value.trim().replaceAll(',', ''));
+    final amount = MoneyFormat.parse(value);
     if (amount == null || amount <= 0) {
       return 'Enter a valid amount greater than 0';
     }
