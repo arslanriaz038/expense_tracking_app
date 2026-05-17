@@ -1,6 +1,7 @@
 import 'package:expense_tracking_app/consts/google_sign_in_config.dart';
 import 'package:expense_tracking_app/firebase_options.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/utils/currency_notifier.dart';
 import 'package:expense_tracking_app/utils/globals.dart';
 import 'package:expense_tracking_app/views/splash_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -30,6 +31,12 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: ColorName.primaryColor),
         useMaterial3: true,
       ),
+      builder: (context, child) {
+        return ListenableBuilder(
+          listenable: CurrencyNotifier.instance,
+          builder: (context, _) => child ?? const SizedBox.shrink(),
+        );
+      },
       home: const SplashPage(),
     );
   }

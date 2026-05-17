@@ -3,4 +3,5 @@ class MyPreferencesConstants {
 
   static const String currentUser = 'currentUser';
   static const String biometricLockEnabled = 'biometricLockEnabled';
+  static const String currencyCode = 'currencyCode';
 }
