@@ -10,7 +10,6 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseServices {
   final _firestoreInstance = FirebaseFirestore.instance;
-  bool _expenseTimestampsBackfilled = false;
 
   User? get _currentUser => FirebaseAuth.instance.currentUser;
 
@@ -173,44 +172,6 @@ class FirebaseServices {
       },
       id: expenseId,
     );
-  }
-
-  Future<void> ensureExpenseTimestampsBackfilled() async {
-    if (_expenseTimestampsBackfilled) return;
-    await _backfillMissingExpenseTimestamps();
-    _expenseTimestampsBackfilled = true;
-  }
-
-  /// Backfills [createdAt]/[updatedAt] on legacy expenses so ordering works.
-  Future<void> _backfillMissingExpenseTimestamps() async {
-    final expenseRef = _expensesRef;
-    if (expenseRef == null) return;
-
-    try {
-      final snapshot = await expenseRef.get();
-      final batch = _firestoreInstance.batch();
-      var pending = 0;
-
-      for (final doc in snapshot.docs) {
-        final data = doc.data();
-        if (data['createdAt'] != null) continue;
-
-        final date = data['date'];
-        final timestamp = date is Timestamp ? date : Timestamp.now();
-        batch.update(doc.reference, {
-          'createdAt': timestamp,
-          'updatedAt': data['updatedAt'] ?? timestamp,
-        });
-        pending++;
-        if (pending >= 500) break;
-      }
-
-      if (pending > 0) {
-        await batch.commit();
-      }
-    } catch (_) {
-      // Non-fatal; stream still works for documents that already have timestamps.
-    }
   }
 
   Future<FirestoreWriteResult> _updateDocumentWithResult({
