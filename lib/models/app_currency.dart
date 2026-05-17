@@ -3,14 +3,30 @@ class AppCurrency {
     required this.code,
     required this.symbol,
     required this.name,
+    this.searchTerms = const [],
   });
 
   final String code;
   final String symbol;
   final String name;
+  final List<String> searchTerms;
 
   String get displayLabel => '$symbol · $code';
   String get listSubtitle => name;
+
+  bool matchesQuery(String query) {
+    final q = query.trim().toLowerCase();
+    if (q.isEmpty) return true;
+
+    final haystack = [
+      code,
+      name,
+      symbol,
+      ...searchTerms,
+    ].join(' ').toLowerCase();
+
+    return haystack.contains(q);
+  }
 }
 
 class AppCurrencyRegistry {
@@ -20,12 +36,22 @@ class AppCurrencyRegistry {
 
   static const List<AppCurrency> all = [
     AppCurrency(code: 'USD', symbol: r'$', name: 'US Dollar'),
+    AppCurrency(
+      code: 'PKR',
+      symbol: '₨',
+      name: 'Pakistani Rupee',
+      searchTerms: ['pakistan', 'pakistani', 'rupee'],
+    ),
+    AppCurrency(
+      code: 'INR',
+      symbol: '₹',
+      name: 'Indian Rupee',
+      searchTerms: ['india', 'indian'],
+    ),
     AppCurrency(code: 'EUR', symbol: '€', name: 'Euro'),
     AppCurrency(code: 'GBP', symbol: '£', name: 'British Pound'),
     AppCurrency(code: 'JPY', symbol: '¥', name: 'Japanese Yen'),
     AppCurrency(code: 'CNY', symbol: '¥', name: 'Chinese Yuan'),
-    AppCurrency(code: 'INR', symbol: '₹', name: 'Indian Rupee'),
-    AppCurrency(code: 'PKR', symbol: 'Rs', name: 'Pakistani Rupee'),
     AppCurrency(code: 'AED', symbol: 'د.إ', name: 'UAE Dirham'),
     AppCurrency(code: 'SAR', symbol: '﷼', name: 'Saudi Riyal'),
     AppCurrency(code: 'CAD', symbol: r'$', name: 'Canadian Dollar'),
