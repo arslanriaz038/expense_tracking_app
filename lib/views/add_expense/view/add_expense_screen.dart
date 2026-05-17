@@ -61,7 +61,8 @@ class AddExpensePage extends StatelessWidget {
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: Text(expense != null ? 'Edit transaction' : 'Add transaction'),
+            title:
+                Text(expense != null ? 'Edit transaction' : 'Add transaction'),
           ),
           body: SingleChildScrollView(
             child: Padding(
@@ -132,8 +133,8 @@ class AddExpensePage extends StatelessWidget {
                         '${cubit.selectedCategory}_${cubit.allCategories.length}',
                       ),
                       initialValue: cubit.allCategories.contains(
-                            cubit.selectedCategory,
-                          )
+                        cubit.selectedCategory,
+                      )
                           ? cubit.selectedCategory
                           : cubit.allCategories.firstOrNull,
                       onChanged: cubit.updateSelectedCategory,
@@ -154,9 +155,9 @@ class AddExpensePage extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: TextButton.icon(
                         onPressed: () => showManageCategoriesSheet(
-                              context,
-                              cubit: cubit,
-                            ),
+                          context,
+                          cubit: cubit,
+                        ),
                         icon: const Icon(Icons.edit_outlined, size: 18),
                         label: const Text('Manage categories'),
                       ),

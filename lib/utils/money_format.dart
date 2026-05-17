@@ -8,14 +8,21 @@ class MoneyFormat {
   static AppCurrency get _currency =>
       AppCurrencyRegistry.forCode(MyPref.getCurrencyCode());
 
-  static NumberFormat get _formatter =>
-      NumberFormat.currency(symbol: _currency.symbol);
+  static bool _hasCents(double amount) {
+    final cents = (amount.abs() * 100).round();
+    return cents % 100 != 0;
+  }
 
-  static String format(double amount) => _formatter.format(amount);
+  static NumberFormat _formatterFor(double amount) => NumberFormat.currency(
+        symbol: _currency.symbol,
+        decimalDigits: _hasCents(amount) ? 2 : 0,
+      );
+
+  static String format(double amount) => _formatterFor(amount).format(amount);
 
   static String formatSigned(double amount, {required bool isIncome}) {
     final prefix = isIncome ? '+' : '-';
-    return '$prefix${_formatter.format(amount.abs())}';
+    return '$prefix${_formatterFor(amount).format(amount.abs())}';
   }
 
   static double? parse(String? value) {
