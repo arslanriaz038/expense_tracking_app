@@ -43,9 +43,7 @@ class _HomeTabState extends State<HomeTab> {
         final now = DateTime.now();
         final periodExpenses = _periodExpenses(cubit.allExpenses, now);
         final totals = calculateTotals(periodExpenses);
-        final recent = List<Expense>.from(periodExpenses)
-          ..sort((a, b) => b.date.compareTo(a.date));
-        final recentFive = recent.take(5).toList();
+        final recentFive = periodExpenses.take(5).toList();
         final monthExpenses = cubit.allExpenses
             .where(
               (e) => expenseMatchesDateFilter(

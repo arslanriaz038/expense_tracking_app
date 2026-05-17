@@ -51,19 +51,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     stopListening();
     emit(LoadingState());
 
-    _expensesSubscription = _firebaseServices.watchExpenses().listen(
-      (expenses) {
-        allExpenses
-          ..clear()
-          ..addAll(expenses);
-        _ensureSelectedCategoryValid();
-        _emitExpensesLoadedIfIdle();
-      },
-      onError: (Object e) {
-        if (_isTransientFirestoreError(e)) return;
-        emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
-      },
-    );
+    unawaited(_startExpensesListener());
 
     _categoriesSubscription =
         _firebaseServices.watchCustomCategories().listen(
@@ -78,6 +66,25 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       onError: (Object e) {
         if (_isTransientFirestoreError(e)) return;
         emit(FailedState(errorMessage: 'Failed to load categories: $e'));
+      },
+    );
+  }
+
+  Future<void> _startExpensesListener() async {
+    await _firebaseServices.ensureExpenseTimestampsBackfilled();
+    if (isClosed) return;
+
+    _expensesSubscription = _firebaseServices.watchExpenses().listen(
+      (expenses) {
+        allExpenses
+          ..clear()
+          ..addAll(expenses);
+        _ensureSelectedCategoryValid();
+        _emitExpensesLoadedIfIdle();
+      },
+      onError: (Object e) {
+        if (_isTransientFirestoreError(e)) return;
+        emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
       },
     );
   }
@@ -239,6 +246,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   Future<void> refreshExpenses() async {
     try {
+      await _firebaseServices.ensureExpenseTimestampsBackfilled();
       final expenses = await _firebaseServices.getAllExpenses();
       allExpenses
         ..clear()

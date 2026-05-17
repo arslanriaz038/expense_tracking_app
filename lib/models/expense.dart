@@ -10,6 +10,8 @@ class Expense {
   final String category;
   final ExpenseType type;
   final String? receiptImageUrl;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
   bool isLoading;
 
   Expense({
@@ -20,6 +22,8 @@ class Expense {
     required this.category,
     this.type = ExpenseType.expense,
     this.receiptImageUrl,
+    this.createdAt,
+    this.updatedAt,
     this.isLoading = false,
   });
 
@@ -38,15 +42,26 @@ class Expense {
 
   factory Expense.fromSnapshot(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
+    final transactionDate = (data['date'] as Timestamp).toDate();
+    final createdAt = _readTimestamp(data['createdAt']) ?? transactionDate;
+    final updatedAt = _readTimestamp(data['updatedAt']) ?? createdAt;
+
     return Expense(
       id: snapshot.id,
       description: data['description'] ?? '',
       amount: data['amount']?.toString() ?? '',
-      date: (data['date'] as Timestamp).toDate(),
+      date: transactionDate,
       category: data['category'] ?? 'Other',
       type: ExpenseType.fromFirestore(data['type'] as String?),
       receiptImageUrl: data['receiptImageUrl'],
+      createdAt: createdAt,
+      updatedAt: updatedAt,
     );
+  }
+
+  static DateTime? _readTimestamp(Object? value) {
+    if (value is Timestamp) return value.toDate();
+    return null;
   }
 
   Expense copyWith({
@@ -57,6 +72,8 @@ class Expense {
     String? category,
     ExpenseType? type,
     String? receiptImageUrl,
+    DateTime? createdAt,
+    DateTime? updatedAt,
     bool? isLoading,
   }) {
     return Expense(
@@ -67,6 +84,8 @@ class Expense {
       category: category ?? this.category,
       type: type ?? this.type,
       receiptImageUrl: receiptImageUrl ?? this.receiptImageUrl,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
       isLoading: isLoading ?? this.isLoading,
     );
   }
