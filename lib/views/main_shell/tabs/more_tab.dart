@@ -2,9 +2,9 @@ import 'package:expense_tracking_app/utils/app_data.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
-import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:expense_tracking_app/widgets/biometric_lock_tile.dart';
 import 'package:expense_tracking_app/widgets/currency_setting_tile.dart';
+import 'package:expense_tracking_app/widgets/delete_account_tile.dart';
 import 'package:expense_tracking_app/widgets/budget_settings_sheet.dart';
 import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:flutter/material.dart';
@@ -95,6 +95,19 @@ class MoreTab extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
+          Text(
+            'Account',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+          ),
+          const SizedBox(height: 8),
+          Card(
+            clipBehavior: Clip.antiAlias,
+            child: const DeleteAccountTile(),
+          ),
+          const SizedBox(height: 24),
           BlocBuilder<ExpensesCubit, ExpensesCubitState>(
             builder: (context, state) {
               final count = context.read<ExpensesCubit>().allExpenses.length;
@@ -110,10 +123,10 @@ class MoreTab extends StatelessWidget {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () async {
+                context.read<ExpensesCubit>().stopListening();
                 await AppData.logOutUserMain();
                 if (!context.mounted) return;
-                AppNavigator.popUntilFirst(context);
-                AppNavigator.pushReplacement(context, const LoginScreen());
+                AppNavigator.goToLogin();
               },
               icon: const Icon(Icons.logout),
               label: const Text('Log out'),

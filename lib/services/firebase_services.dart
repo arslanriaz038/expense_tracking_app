@@ -8,10 +8,11 @@ import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 class FirebaseServices {
   final _firestoreInstance = FirebaseFirestore.instance;
-  final user = FirebaseAuth.instance.currentUser;
+
+  User? get _currentUser => FirebaseAuth.instance.currentUser;
 
   CollectionReference<Map<String, dynamic>>? get _expensesRef {
-    final userId = user?.uid;
+    final userId = _currentUser?.uid;
     if (userId == null) return null;
     return _firestoreInstance
         .collection('users')
@@ -20,7 +21,7 @@ class FirebaseServices {
   }
 
   DocumentReference<Map<String, dynamic>>? get _userDocRef {
-    final userId = user?.uid;
+    final userId = _currentUser?.uid;
     if (userId == null) return null;
     return _firestoreInstance.collection('users').doc(userId);
   }
@@ -67,7 +68,7 @@ class FirebaseServices {
   }
 
   Future<String?> uploadReceiptImage(String imagePath) async {
-    final userId = user?.uid;
+    final userId = _currentUser?.uid;
     if (userId == null) return null;
 
     final storageRef = firebase_storage.FirebaseStorage.instance
@@ -178,6 +179,64 @@ class FirebaseServices {
       );
     } catch (e) {
       throw Exception('Error saving categories: $e');
+    }
+  }
+
+  Future<void> deleteAllUserData() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) {
+      throw Exception('User not signed in');
+    }
+
+    final expensesRef = _firestoreInstance
+        .collection('users')
+        .doc(userId)
+        .collection('expenses');
+
+    await _deleteCollectionInBatches(expensesRef);
+    await _firestoreInstance.collection('users').doc(userId).delete();
+    await _deleteReceiptStorage(userId);
+  }
+
+  Future<void> _deleteCollectionInBatches(
+    CollectionReference<Map<String, dynamic>> collection,
+  ) async {
+    const batchSize = 400;
+
+    while (true) {
+      final snapshot = await collection.limit(batchSize).get();
+      if (snapshot.docs.isEmpty) break;
+
+      final batch = _firestoreInstance.batch();
+      for (final doc in snapshot.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+    }
+  }
+
+  Future<void> _deleteReceiptStorage(String userId) async {
+    try {
+      final storageRef = firebase_storage.FirebaseStorage.instance
+          .ref()
+          .child('receipts')
+          .child(userId);
+
+      await _deleteStorageFolder(storageRef);
+    } catch (_) {}
+  }
+
+  Future<void> _deleteStorageFolder(
+    firebase_storage.Reference folderRef,
+  ) async {
+    final listing = await folderRef.listAll();
+
+    for (final item in listing.items) {
+      await item.delete();
+    }
+
+    for (final prefix in listing.prefixes) {
+      await _deleteStorageFolder(prefix);
     }
   }
 }

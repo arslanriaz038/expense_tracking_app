@@ -16,15 +16,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AddExpensePage extends StatelessWidget {
-  final ExpensesCubit cubit;
-  final Expense? expense;
-
+class AddExpensePage extends StatefulWidget {
   const AddExpensePage({
     super.key,
     this.expense,
     required this.cubit,
   });
+
+  final ExpensesCubit cubit;
+  final Expense? expense;
+
+  @override
+  State<AddExpensePage> createState() => _AddExpensePageState();
+}
+
+class _AddExpensePageState extends State<AddExpensePage> {
+  final _formKey = GlobalKey<FormState>();
+
+  ExpensesCubit get cubit => widget.cubit;
+  Expense? get expense => widget.expense;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +78,7 @@ class AddExpensePage extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Form(
-                key: cubit.formKey,
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -220,6 +230,10 @@ class AddExpensePage extends StatelessWidget {
                         onPressed: state is LoadingState
                             ? null
                             : () async {
+                                if (!(_formKey.currentState?.validate() ??
+                                    false)) {
+                                  return;
+                                }
                                 if (expense?.id != null) {
                                   await cubit.updateExpense(
                                     expense!.id!,

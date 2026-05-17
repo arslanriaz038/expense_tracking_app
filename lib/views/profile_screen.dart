@@ -3,7 +3,6 @@ import 'package:expense_tracking_app/utils/app_data.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/expense_list_filters.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
-import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/category_breakdown_chart.dart';
 import 'package:expense_tracking_app/widgets/expense_summary_banner.dart';
@@ -79,10 +78,10 @@ class ProfileScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () async {
+                  _cubitOrNull(context)?.stopListening();
                   await AppData.logOutUserMain();
                   if (!context.mounted) return;
-                  AppNavigator.popUntilFirst(context);
-                  AppNavigator.pushReplacement(context, const LoginScreen());
+                  AppNavigator.goToLogin();
                 },
                 child: const Text('Log out'),
               ),

@@ -1,3 +1,5 @@
+import 'package:expense_tracking_app/utils/globals.dart';
+import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppNavigator {
@@ -19,5 +21,16 @@ class AppNavigator {
 
   static void popUntilFirst(BuildContext context) {
     Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  /// Clears the entire stack and shows login (e.g. after logout or account deletion).
+  static void goToLogin() {
+    final navigator = navigatorKey.currentState;
+    if (navigator == null) return;
+
+    navigator.pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+      (route) => false,
+    );
   }
 }

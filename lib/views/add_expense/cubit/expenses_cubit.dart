@@ -16,7 +16,6 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   ExpensesCubit() : super(ExpenseCubitInitial());
 
   final FirebaseServices _firebaseServices = FirebaseServices();
-  final formKey = GlobalKey<FormState>();
 
   final TextEditingController descriptionController = TextEditingController();
   final TextEditingController amountController = TextEditingController();
@@ -37,9 +36,15 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         expenseCategories: allExpenses.map((e) => e.category).toList(),
       );
 
-  void startListening() {
+  void stopListening() {
     _expensesSubscription?.cancel();
+    _expensesSubscription = null;
     _categoriesSubscription?.cancel();
+    _categoriesSubscription = null;
+  }
+
+  void startListening() {
+    stopListening();
     emit(LoadingState());
 
     _expensesSubscription = _firebaseServices.watchExpenses().listen(
@@ -237,23 +242,19 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   }
 
   Future<void> saveExpense() async {
-    if (formKey.currentState?.validate() ?? false) {
-      hideKeyBoard();
-      await _saveExpense();
-    }
+    hideKeyBoard();
+    await _saveExpense();
   }
 
   Future<void> updateExpense(
     String expenseId, {
     String? existingReceiptUrl,
   }) async {
-    if (formKey.currentState?.validate() ?? false) {
-      hideKeyBoard();
-      await _updateExpense(
-        expenseId,
-        existingReceiptUrl: existingReceiptUrl,
-      );
-    }
+    hideKeyBoard();
+    await _updateExpense(
+      expenseId,
+      existingReceiptUrl: existingReceiptUrl,
+    );
   }
 
   Future<void> _saveExpense() async {
@@ -294,8 +295,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
 
   @override
   Future<void> close() {
-    _expensesSubscription?.cancel();
-    _categoriesSubscription?.cancel();
+    stopListening();
     descriptionController.dispose();
     amountController.dispose();
     return super.close();

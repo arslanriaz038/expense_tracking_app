@@ -32,6 +32,8 @@ class AuthErrorMessage {
       'invalid-verification-code' => 'Invalid verification code.',
       'invalid-verification-id' => 'Verification expired. Please try again.',
       'cancelled' || 'canceled' => 'Sign-in was canceled.',
+      'requires-recent-login' =>
+        'For security, confirm your identity before deleting your account.',
       _ => fallback?.isNotEmpty == true
           ? fallback!
           : 'Authentication failed. Please try again.',
