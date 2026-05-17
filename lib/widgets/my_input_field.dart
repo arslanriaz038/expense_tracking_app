@@ -9,6 +9,8 @@ class MyInputField extends StatefulWidget {
   final TextStyle? textStyle;
   final int? maxLine;
   final TextInputType? keyboardType;
+  final Widget? prefix;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
   final TextEditingController? controller;
   final FormFieldValidator<String>? validator;
@@ -26,6 +28,8 @@ class MyInputField extends StatefulWidget {
     required this.hintText,
     this.textStyle,
     this.keyboardType,
+    this.prefix,
+    this.prefixIcon,
     this.suffixIcon,
     this.controller,
     this.enable,
@@ -66,6 +70,8 @@ class _MyInputFieldState extends State<MyInputField> {
       inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         errorText: widget.errorText,
+        prefix: widget.prefix,
+        prefixIcon: widget.prefixIcon,
         suffixIcon: widget.isPassword
             ? IconButton(
                 splashRadius: 1,

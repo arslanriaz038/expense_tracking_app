@@ -3,8 +3,11 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/models/app_currency.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/app_alerts.dart';
+import 'package:expense_tracking_app/utils/currency_notifier.dart';
+import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/utils/app_pickers.dart';
@@ -139,18 +142,40 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    MyInputField(
-                      controller: cubit.amountController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(
-                          RegExp(r'^\d*\.?\d{0,2}'),
-                        ),
-                      ],
-                      hintText: 'Amount',
-                      validator: AppFormFieldValidator.amountValidator,
+                    ListenableBuilder(
+                      listenable: CurrencyNotifier.instance,
+                      builder: (context, _) {
+                        final currency = AppCurrencyRegistry.forCode(
+                          MyPref.getCurrencyCode(),
+                        );
+                        return MyInputField(
+                          controller: cubit.amountController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'^\d*\.?\d{0,2}'),
+                            ),
+                          ],
+                          hintText: 'Amount',
+                          validator: AppFormFieldValidator.amountValidator,
+                          prefix: Padding(
+                            padding: const EdgeInsets.only(left: 12, right: 4),
+                            child: Text(
+                              currency.symbol,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: ColorName.gray,
+                                  ),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     TransactionDatePicker(
