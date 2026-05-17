@@ -37,7 +37,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
   Expense? get expense => widget.expense;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
+    _initializeForm();
+  }
+
+  void _initializeForm() {
     if (expense != null) {
       cubit.descriptionController.text = expense!.description;
       cubit.amountController.text = expense!.amount;
@@ -48,19 +53,32 @@ class _AddExpensePageState extends State<AddExpensePage> {
     } else {
       cubit.resetForm();
     }
+  }
 
-    Future<void> pickImage() async {
-      final result = await AppPickers.pickImage(context);
-      if (result != null) {
-        cubit.updatePickedImagePath(result.path);
-      }
+  Future<void> pickImage() async {
+    final result = await AppPickers.pickImage(context);
+    if (result != null) {
+      cubit.updatePickedImagePath(result.path);
     }
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return BlocConsumer<ExpensesCubit, ExpensesCubitState>(
       bloc: cubit,
+      listenWhen: (previous, current) =>
+          current is ExpenseAddedState ||
+          current is ExpenseUpdatedState ||
+          current is FailedState,
       listener: (context, state) {
-        if (state is ExpenseAddedState || state is ExpenseUpdatedState) {
-          AppNavigator.pop(context);
+        if (state is ExpenseAddedState) {
+          final message = state.syncMessage ?? 'Saved successfully';
+          if (context.mounted) AppNavigator.pop(context);
+          AppAlerts.showSuccessMessage(context, message);
+        } else if (state is ExpenseUpdatedState) {
+          final message = state.syncMessage ?? 'Updated successfully';
+          if (context.mounted) AppNavigator.pop(context);
+          AppAlerts.showSuccessMessage(context, message);
         } else if (state is FailedState) {
           AppAlerts.showErrorMessage(
             context,

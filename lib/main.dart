@@ -1,5 +1,6 @@
 import 'package:expense_tracking_app/consts/google_sign_in_config.dart';
 import 'package:expense_tracking_app/firebase_options.dart';
+import 'package:expense_tracking_app/services/firestore_config.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
 import 'package:expense_tracking_app/utils/currency_notifier.dart';
 import 'package:expense_tracking_app/utils/globals.dart';
@@ -12,6 +13,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await configureFirestore();
   await GoogleSignIn.instance.initialize(serverClientId: kGoogleServerClientId);
   await GetStorage.init();
 

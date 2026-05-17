@@ -6,7 +6,9 @@ import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
+import 'package:expense_tracking_app/services/pending_receipt_service.dart';
 import 'package:expense_tracking_app/utils/helper_functions.dart';
+import 'package:expense_tracking_app/utils/network_status.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -56,6 +58,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
       },
       onError: (Object e) {
+        if (_isTransientFirestoreError(e)) return;
         emit(FailedState(errorMessage: 'Failed to load expenses: $e'));
       },
     );
@@ -73,9 +76,44 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         }
       },
       onError: (Object e) {
+        if (_isTransientFirestoreError(e)) return;
         emit(FailedState(errorMessage: 'Failed to load categories: $e'));
       },
     );
+  }
+
+  bool _isTransientFirestoreError(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('unavailable') ||
+        message.contains('network') ||
+        message.contains('host unreachable');
+  }
+
+  String _offlineSyncMessage({required bool receiptQueued}) {
+    if (receiptQueued) {
+      return 'Saved offline. Receipt will upload when you are back online.';
+    }
+    return 'Saved offline. Will sync when you are back online.';
+  }
+
+  Future<void> _attachReceiptIfNeeded({
+    required String expenseId,
+    required bool pendingSync,
+  }) async {
+    if (pickedImagePath == null) return;
+
+    if (pendingSync || !await NetworkStatus.isOnline) {
+      await PendingReceiptService.enqueue(
+        expenseId: expenseId,
+        localPath: pickedImagePath!,
+      );
+      return;
+    }
+
+    final url = await _firebaseServices.uploadReceiptImage(pickedImagePath!);
+    if (url != null) {
+      await _firebaseServices.updateReceiptUrl(expenseId, url);
+    }
   }
 
   Future<void> loadCategories() async {
@@ -189,6 +227,10 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     }
   }
 
+  Future<void> syncPendingReceipts() async {
+    await PendingReceiptService.processQueue(_firebaseServices);
+  }
+
   Future<void> refreshExpenses() async {
     try {
       final expenses = await _firebaseServices.getAllExpenses();
@@ -219,23 +261,37 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   Future<void> _updateExpense(String expenseId, {String? existingReceiptUrl}) async {
     emit(LoadingState());
 
-    String? imageUrl = existingReceiptUrl;
-    if (pickedImagePath != null) {
-      imageUrl = await _firebaseServices.uploadReceiptImage(pickedImagePath!);
-    }
-
     final updatedExpense = Expense(
       description: descriptionController.text.trim(),
       amount: amountController.text.trim(),
       date: selectedDate,
       category: selectedCategory,
       type: selectedType,
-      receiptImageUrl: imageUrl,
+      receiptImageUrl: existingReceiptUrl,
     );
 
     try {
-      await _firebaseServices.updateExpense(expenseId, updatedExpense);
-      emit(ExpenseUpdatedState(updatedExpense));
+      final result =
+          await _firebaseServices.updateExpense(expenseId, updatedExpense);
+
+      final receiptQueued = pickedImagePath != null;
+      if (receiptQueued) {
+        await _attachReceiptIfNeeded(
+          expenseId: expenseId,
+          pendingSync: result.pendingSync,
+        );
+      }
+
+      final syncMessage = result.pendingSync
+          ? _offlineSyncMessage(receiptQueued: receiptQueued)
+          : 'Updated successfully';
+
+      emit(
+        ExpenseUpdatedState(
+          updatedExpense,
+          syncMessage: syncMessage,
+        ),
+      );
     } catch (e) {
       emit(FailedState(errorMessage: 'Failed to update expense: $e'));
     }
@@ -261,23 +317,29 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     try {
       emit(LoadingState());
 
-      String? imageUrl;
-      if (pickedImagePath != null) {
-        imageUrl = await _firebaseServices.uploadReceiptImage(pickedImagePath!);
-      }
-
-      await _firebaseServices.saveExpense(
+      final result = await _firebaseServices.saveExpense(
         Expense(
           description: descriptionController.text.trim(),
           amount: amountController.text.trim(),
           date: selectedDate,
           category: selectedCategory,
           type: selectedType,
-          receiptImageUrl: imageUrl,
         ),
       );
 
-      emit(ExpenseAddedState());
+      final receiptQueued = pickedImagePath != null;
+      if (receiptQueued) {
+        await _attachReceiptIfNeeded(
+          expenseId: result.id,
+          pendingSync: result.pendingSync,
+        );
+      }
+
+      final syncMessage = result.pendingSync
+          ? _offlineSyncMessage(receiptQueued: receiptQueued)
+          : 'Saved successfully';
+
+      emit(ExpenseAddedState(syncMessage: syncMessage));
     } catch (e) {
       emit(FailedState(errorMessage: 'Failed to save expense: $e'));
     }

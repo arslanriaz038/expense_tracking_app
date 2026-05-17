@@ -29,15 +29,6 @@ class DateUpdatedState extends ExpensesCubitState {
   List<Object> get props => [selectedDate];
 }
 
-class ExpenseUpdatedState extends ExpensesCubitState {
-  final Expense expense;
-
-  const ExpenseUpdatedState(this.expense);
-
-  @override
-  List<Object> get props => [expense];
-}
-
 class ExpenseDeletedState extends ExpensesCubitState {
   final String expenseId;
 
@@ -114,7 +105,24 @@ class BudgetSavedState extends ExpensesCubitState {
 
 class SuccessState extends ExpensesCubitState {}
 
-class ExpenseAddedState extends ExpensesCubitState {}
+class ExpenseAddedState extends ExpensesCubitState {
+  final String? syncMessage;
+
+  const ExpenseAddedState({this.syncMessage});
+
+  @override
+  List<Object> get props => [syncMessage ?? ''];
+}
+
+class ExpenseUpdatedState extends ExpensesCubitState {
+  final Expense expense;
+  final String? syncMessage;
+
+  const ExpenseUpdatedState(this.expense, {this.syncMessage});
+
+  @override
+  List<Object> get props => [expense, syncMessage ?? ''];
+}
 
 class FailedState extends ExpensesCubitState {
   final String? errorMessage;

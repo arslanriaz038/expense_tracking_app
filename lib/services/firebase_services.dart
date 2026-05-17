@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:expense_tracking_app/services/firestore_write_result.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -44,8 +46,9 @@ class FirebaseServices {
     if (expenseRef == null) return [];
 
     try {
-      final querySnapshot =
-          await expenseRef.orderBy('date', descending: true).get();
+      final querySnapshot = await expenseRef
+          .orderBy('date', descending: true)
+          .get(const GetOptions(source: Source.serverAndCache));
       return querySnapshot.docs
           .map((document) => Expense.fromSnapshot(document))
           .toList();
@@ -54,17 +57,81 @@ class FirebaseServices {
     }
   }
 
-  Future<void> saveExpense(Expense expense) async {
+  static const _writeTimeout = Duration(seconds: 3);
+
+  Future<FirestoreWriteResult> saveExpense(Expense expense) async {
     final expenseRef = _expensesRef;
     if (expenseRef == null) {
       throw Exception('User not signed in');
     }
 
+    final docRef = expenseRef.doc();
+    final data = expense.toMap();
+
+    return _writeDocument(
+      docRef: docRef,
+      data: data,
+    );
+  }
+
+  Future<void> updateReceiptUrl(String expenseId, String receiptImageUrl) async {
+    final expenseRef = _expensesRef;
+    if (expenseRef == null) {
+      throw Exception('User not signed in');
+    }
+
+    await _updateDocument(
+      expenseRef.doc(expenseId),
+      {'receiptImageUrl': receiptImageUrl},
+    );
+  }
+
+  Future<FirestoreWriteResult> _writeDocument({
+    required DocumentReference<Map<String, dynamic>> docRef,
+    required Map<String, dynamic> data,
+  }) async {
+    final write = docRef.set(data);
+
     try {
-      await expenseRef.add(expense.toMap());
+      await write.timeout(_writeTimeout);
+      return FirestoreWriteResult(id: docRef.id, pendingSync: false);
+    } on TimeoutException {
+      unawaited(write);
+      return FirestoreWriteResult(id: docRef.id, pendingSync: true);
     } catch (error) {
+      if (_isOfflineError(error)) {
+        unawaited(docRef.set(data));
+        return FirestoreWriteResult(id: docRef.id, pendingSync: true);
+      }
       throw Exception('Error saving expense: $error');
     }
+  }
+
+  Future<void> _updateDocument(
+    DocumentReference<Map<String, dynamic>> docRef,
+    Map<String, dynamic> data,
+  ) async {
+    final write = docRef.update(data);
+
+    try {
+      await write.timeout(_writeTimeout);
+    } on TimeoutException {
+      unawaited(write);
+    } catch (error) {
+      if (_isOfflineError(error)) {
+        unawaited(docRef.update(data));
+        return;
+      }
+      rethrow;
+    }
+  }
+
+  bool _isOfflineError(Object error) {
+    final message = error.toString().toLowerCase();
+    return message.contains('unavailable') ||
+        message.contains('network') ||
+        message.contains('host unreachable') ||
+        message.contains('failed host lookup');
   }
 
   Future<String?> uploadReceiptImage(String imagePath) async {
@@ -81,15 +148,40 @@ class FirebaseServices {
     return storageRef.getDownloadURL();
   }
 
-  Future<void> updateExpense(String expenseId, Expense updatedExpense) async {
+  Future<FirestoreWriteResult> updateExpense(
+    String expenseId,
+    Expense updatedExpense,
+  ) async {
     final expenseRef = _expensesRef;
     if (expenseRef == null) {
       throw Exception('User not signed in');
     }
 
+    return _updateDocumentWithResult(
+      docRef: expenseRef.doc(expenseId),
+      data: updatedExpense.toMap(),
+      id: expenseId,
+    );
+  }
+
+  Future<FirestoreWriteResult> _updateDocumentWithResult({
+    required DocumentReference<Map<String, dynamic>> docRef,
+    required Map<String, dynamic> data,
+    required String id,
+  }) async {
+    final write = docRef.update(data);
+
     try {
-      await expenseRef.doc(expenseId).update(updatedExpense.toMap());
+      await write.timeout(_writeTimeout);
+      return FirestoreWriteResult(id: id, pendingSync: false);
+    } on TimeoutException {
+      unawaited(write);
+      return FirestoreWriteResult(id: id, pendingSync: true);
     } catch (error) {
+      if (_isOfflineError(error)) {
+        unawaited(docRef.update(data));
+        return FirestoreWriteResult(id: id, pendingSync: true);
+      }
       throw Exception('Error updating expense: $error');
     }
   }
@@ -112,7 +204,9 @@ class FirebaseServices {
     if (userDoc == null) return const MonthlyBudget();
 
     try {
-      final snapshot = await userDoc.get();
+      final snapshot = await userDoc.get(
+        const GetOptions(source: Source.serverAndCache),
+      );
       final data = snapshot.data();
       if (data == null) return const MonthlyBudget();
       return MonthlyBudget.fromMap(
@@ -157,7 +251,9 @@ class FirebaseServices {
     if (userDoc == null) return [];
 
     try {
-      final snapshot = await userDoc.get();
+      final snapshot = await userDoc.get(
+        const GetOptions(source: Source.serverAndCache),
+      );
       final raw = snapshot.data()?['customCategories'];
       if (raw is! List) return [];
       return raw.map((item) => item.toString()).toList();

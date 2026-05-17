@@ -8,6 +8,7 @@ import 'package:expense_tracking_app/views/main_shell/tabs/home_tab.dart';
 import 'package:expense_tracking_app/views/main_shell/tabs/insights_tab.dart';
 import 'package:expense_tracking_app/views/main_shell/tabs/more_tab.dart';
 import 'package:expense_tracking_app/widgets/confirm_exit_dialog.dart';
+import 'package:expense_tracking_app/widgets/connectivity_sync_listener.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,8 +71,10 @@ class MainShellPageState extends State<MainShellPage> {
     return BlocProvider(
       create: (context) => ExpensesCubit()
         ..startListening()
-        ..loadBudget(),
-      child: BlocListener<ExpensesCubit, ExpensesCubitState>(
+        ..loadBudget()
+        ..syncPendingReceipts(),
+      child: ConnectivitySyncListener(
+        child: BlocListener<ExpensesCubit, ExpensesCubitState>(
         listener: (context, state) {
           if (state is FailedState) {
             AppAlerts.showErrorMessage(
@@ -80,10 +83,6 @@ class MainShellPageState extends State<MainShellPage> {
             );
           } else if (state is ExpenseDeletedState) {
             AppAlerts.showSuccessMessage(context, 'Deleted successfully');
-          } else if (state is ExpenseAddedState) {
-            AppAlerts.showSuccessMessage(context, 'Saved successfully');
-          } else if (state is ExpenseUpdatedState) {
-            AppAlerts.showSuccessMessage(context, 'Updated successfully');
           } else if (state is BudgetSavedState) {
             AppAlerts.showSuccessMessage(context, 'Budgets updated');
           }
@@ -177,6 +176,7 @@ class MainShellPageState extends State<MainShellPage> {
             ),
             );
           },
+        ),
         ),
       ),
     );
