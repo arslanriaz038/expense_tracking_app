@@ -103,17 +103,18 @@ class ActivityTabState extends State<ActivityTab> {
         final filterCount = _filters.activeFilterCount;
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Activity'),
-            centerTitle: false,
-          ),
           body: RefreshIndicator(
             onRefresh: widget.onRefresh,
             child: CustomScrollView(
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      MediaQuery.paddingOf(context).top + 8,
+                      16,
+                      8,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

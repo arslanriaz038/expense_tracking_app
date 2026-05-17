@@ -59,11 +59,6 @@ class _HomeTabState extends State<HomeTab> {
         final monthCategorySpending = categorySpending(monthExpenses);
 
         return Scaffold(
-          appBar: AppBar(
-            forceMaterialTransparency: true,
-            title: const Text('Home'),
-            centerTitle: false,
-          ),
           body: state is LoadingState && cubit.allExpenses.isEmpty
               ? const Center(child: CircularProgressIndicator.adaptive())
               : RefreshIndicator(
@@ -73,7 +68,12 @@ class _HomeTabState extends State<HomeTab> {
                     await cubit.loadCategories();
                   },
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      MediaQuery.paddingOf(context).top + 8,
+                      16,
+                      100,
+                    ),
                     children: [
                       Text(
                         'Hello, ${MyPref.readUserInfo()?.name ?? 'there'}',

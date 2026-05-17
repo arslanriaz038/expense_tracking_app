@@ -18,12 +18,13 @@ class MoreTab extends StatelessWidget {
     final user = MyPref.readUserInfo();
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('More'),
-        centerTitle: false,
-      ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          MediaQuery.paddingOf(context).top + 8,
+          16,
+          100,
+        ),
         children: [
           const SizedBox(height: 8),
           Center(

@@ -37,29 +37,35 @@ class InsightsTab extends StatelessWidget {
         final monthCategorySpending = breakdown;
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text('Insights'),
-            centerTitle: false,
-            actions: [
-              IconButton(
-                tooltip: 'Edit budgets',
-                onPressed: () => showBudgetSettingsSheet(context),
-                icon: const Icon(Icons.savings_outlined),
-              ),
-            ],
-          ),
           body: state is LoadingState && cubit.allExpenses.isEmpty
               ? const Center(child: CircularProgressIndicator.adaptive())
               : RefreshIndicator(
                   onRefresh: onRefresh,
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 100),
+                    padding: EdgeInsets.fromLTRB(
+                      16,
+                      MediaQuery.paddingOf(context).top + 8,
+                      16,
+                      100,
+                    ),
                     children: [
-                      Text(
-                        'This month',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'This month',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
+                          ),
+                          IconButton(
+                            tooltip: 'Edit budgets',
+                            onPressed: () => showBudgetSettingsSheet(context),
+                            icon: const Icon(Icons.savings_outlined),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       ExpenseSummaryBanner(totals: totals),
