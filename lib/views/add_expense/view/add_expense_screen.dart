@@ -11,10 +11,10 @@ import 'package:expense_tracking_app/utils/app_pickers.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
+import 'package:expense_tracking_app/widgets/transaction_date_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:intl/intl.dart';
 
 class AddExpensePage extends StatelessWidget {
   final ExpensesCubit cubit;
@@ -31,7 +31,7 @@ class AddExpensePage extends StatelessWidget {
     if (expense != null) {
       cubit.descriptionController.text = expense!.description;
       cubit.amountController.text = expense!.amount;
-      cubit.selectedDate = expense!.date;
+      cubit.updateSelectedDate(expense!.date);
       cubit.pickedImagePath = null;
       cubit.updateSelectedCategory(expense!.category);
       cubit.updateSelectedType(expense!.type);
@@ -122,28 +122,9 @@ class AddExpensePage extends StatelessWidget {
                       validator: AppFormFieldValidator.amountValidator,
                     ),
                     const SizedBox(height: 16),
-                    GestureDetector(
-                      onTap: () async {
-                        final pickedDate = await showDatePicker(
-                          context: context,
-                          initialDate: cubit.selectedDate,
-                          firstDate: DateTime(2000),
-                          lastDate: DateTime.now(),
-                        );
-                        if (pickedDate != null &&
-                            pickedDate != cubit.selectedDate) {
-                          cubit.updateSelectedDate(pickedDate);
-                        }
-                      },
-                      child: Row(
-                        children: [
-                          const Text('Date: '),
-                          Text(
-                            DateFormat('yyyy-MM-dd').format(cubit.selectedDate),
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ],
-                      ),
+                    TransactionDatePicker(
+                      selectedDate: cubit.selectedDate,
+                      onDateChanged: cubit.updateSelectedDate,
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(

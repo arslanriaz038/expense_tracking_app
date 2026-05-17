@@ -173,7 +173,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
   }
 
   void updateSelectedDate(DateTime date) {
-    selectedDate = date;
+    selectedDate = DateTime(date.year, date.month, date.day);
     emit(DateUpdatedState(selectedDate));
   }
 
@@ -287,7 +287,8 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
     amountController.clear();
     selectedCategory = allCategories.first;
     selectedType = ExpenseType.expense;
-    selectedDate = DateTime.now();
+    final now = DateTime.now();
+    selectedDate = DateTime(now.year, now.month, now.day);
     pickedImagePath = null;
   }
 
