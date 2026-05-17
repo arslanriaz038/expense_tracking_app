@@ -39,6 +39,9 @@ class AppFormFieldValidator {
     if (amount == null || amount <= 0) {
       return 'Enter a valid amount greater than 0';
     }
+    if (amount > MoneyFormat.maxAmount) {
+      return 'Amount is too large';
+    }
     return null;
   }
 

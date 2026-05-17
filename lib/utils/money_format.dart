@@ -7,6 +7,9 @@ import 'package:intl/intl.dart';
 class MoneyFormat {
   MoneyFormat._();
 
+  /// Largest amount allowed in inputs (12 whole digits + cents).
+  static const double maxAmount = 999999999999.99;
+
   static String get _locale => Intl.getCurrentLocale();
 
   static AppCurrency get _currency =>

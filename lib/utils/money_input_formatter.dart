@@ -35,7 +35,11 @@ class MoneyInputFormatter extends TextInputFormatter {
       return oldValue;
     }
 
-    final formatted = _formatNormalized(normalized);
+    final formatted = _tryFormatNormalized(normalized);
+    if (formatted == null) {
+      return oldValue;
+    }
+
     final selectionIndex = _cursorIndex(
       oldValue: oldValue,
       newValue: newValue,
@@ -48,18 +52,26 @@ class MoneyInputFormatter extends TextInputFormatter {
     );
   }
 
-  /// Keeps digits and at most one decimal separator; limits fraction to 2 digits.
+  /// Keeps digits and at most one decimal separator; limits fraction digits.
   String? _normalizeRawInput(String raw) {
     final buffer = StringBuffer();
     var hasDecimal = false;
+    var wholeDigits = 0;
     var fractionDigits = 0;
 
     for (final rune in raw.runes) {
       final char = String.fromCharCode(rune);
       if (_isDigit(char)) {
         if (hasDecimal) {
-          if (fractionDigits >= 2) continue;
+          if (fractionDigits >= maxFractionDigits) {
+            return null;
+          }
           fractionDigits++;
+        } else {
+          if (wholeDigits >= maxWholeDigits) {
+            return null;
+          }
+          wholeDigits++;
         }
         buffer.write(char);
       } else if (char == _groupingSeparator) {
@@ -79,17 +91,25 @@ class MoneyInputFormatter extends TextInputFormatter {
     return result;
   }
 
+  String? _tryFormatNormalized(String normalized) {
+    try {
+      return _formatNormalized(normalized);
+    } catch (_) {
+      return null;
+    }
+  }
+
   String _formatNormalized(String normalized) {
     final endsWithDecimal = normalized.endsWith(_decimalSeparator);
     final parts = normalized.split(_decimalSeparator);
-    final wholeDigits = parts.first.replaceAll(_groupingSeparator, '');
+    final wholeDigits = _stripLeadingZeros(
+      parts.first.replaceAll(_groupingSeparator, ''),
+    );
     if (wholeDigits.isEmpty && !endsWithDecimal) {
       return '';
     }
 
-    final wholeValue = wholeDigits.isEmpty ? 0 : int.parse(wholeDigits);
-    final wholeFormatted =
-        NumberFormat('#,###', _locale).format(wholeValue);
+    final wholeFormatted = _formatGroupedDigits(wholeDigits);
 
     if (parts.length == 1 && !endsWithDecimal) {
       return wholeFormatted;
@@ -100,6 +120,32 @@ class MoneyInputFormatter extends TextInputFormatter {
       return '$wholeFormatted$_decimalSeparator';
     }
     return '$wholeFormatted$_decimalSeparator$fraction';
+  }
+
+  /// Groups digit strings without parsing to [int] (safe for very long input).
+  String _formatGroupedDigits(String digits) {
+    if (digits.isEmpty || digits == '0') return '0';
+
+    final mod = digits.length % 3;
+    final groups = <String>[];
+
+    if (mod > 0) {
+      groups.add(digits.substring(0, mod));
+    }
+    for (var i = mod; i < digits.length; i += 3) {
+      groups.add(digits.substring(i, i + 3));
+    }
+
+    return groups.join(_groupingSeparator);
+  }
+
+  String _stripLeadingZeros(String digits) {
+    if (digits.isEmpty) return '';
+    var start = 0;
+    while (start < digits.length - 1 && digits[start] == '0') {
+      start++;
+    }
+    return digits.substring(start);
   }
 
   int _cursorIndex({
