@@ -25,7 +25,7 @@ class _BiometricLockTileState extends State<BiometricLockTile> {
   }
 
   Future<void> _loadState() async {
-    final supported = await _biometricService.canUseBiometrics();
+    final supported = await _biometricService.canUseAppLock();
     final label = supported
         ? await _biometricService.primaryBiometricLabel()
         : 'Biometrics';
@@ -47,32 +47,44 @@ class _BiometricLockTileState extends State<BiometricLockTile> {
       if (!_deviceSupported) {
         AppAlerts.showErrorMessage(
           context,
-          'Biometrics are not available on this device.',
+          'Device authentication is not available.',
         );
         return;
       }
 
-      final confirmed = await _biometricService.authenticate(
+      final result = await _biometricService.authenticate(
         reason: 'Confirm your identity to enable app lock',
         biometricOnly: false,
       );
 
-      if (!confirmed) {
-        AppAlerts.showInfoMessage(context, 'App lock was not enabled.');
+      if (!mounted) return;
+
+      if (result.success) {
+        await MyPref.setBiometricLockEnabled(true);
+        setState(() => _enabled = true);
+        AppAlerts.showSuccessMessage(context, 'App lock enabled');
         return;
       }
 
-      await MyPref.setBiometricLockEnabled(true);
-    } else {
-      await MyPref.setBiometricLockEnabled(false);
+      if (result.userCanceled) {
+        AppAlerts.showInfoMessage(
+          context,
+          'Authentication canceled. App lock was not enabled.',
+        );
+        return;
+      }
+
+      AppAlerts.showErrorMessage(
+        context,
+        result.errorMessage ?? 'Could not enable app lock.',
+      );
+      return;
     }
 
+    await MyPref.setBiometricLockEnabled(false);
     if (mounted) {
-      setState(() => _enabled = value);
-      AppAlerts.showSuccessMessage(
-        context,
-        value ? 'App lock enabled' : 'App lock disabled',
-      );
+      setState(() => _enabled = false);
+      AppAlerts.showSuccessMessage(context, 'App lock disabled');
     }
   }
 
@@ -86,7 +98,7 @@ class _BiometricLockTileState extends State<BiometricLockTile> {
             ? 'Checking device...'
             : _deviceSupported
                 ? 'Require $_biometricLabel when opening the app'
-                : 'Biometrics not available on this device',
+                : 'Device authentication is not available',
       ),
       value: _enabled,
       onChanged: _isLoading || !_deviceSupported ? null : _onChanged,

@@ -53,7 +53,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
     setState(() => _isAuthenticating = true);
 
-    final success = await _biometricService.authenticate(
+    final result = await _biometricService.authenticate(
       reason: 'Unlock Expense Tracker to view your financial data',
     );
 
@@ -61,7 +61,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
     setState(() {
       _isAuthenticating = false;
-      _unlocked = success;
+      _unlocked = result.success;
     });
   }
 
