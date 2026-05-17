@@ -19,6 +19,7 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
   bool _unlocked = false;
   bool _isAuthenticating = false;
+  bool _lockOnNextResume = false;
   String _biometricLabel = 'Biometrics';
 
   @override
@@ -40,11 +41,29 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed &&
-        MyPref.isBiometricLockEnabled() &&
-        _unlocked) {
-      setState(() => _unlocked = false);
-      _unlock();
+    // Only re-lock after the app was truly backgrounded (paused/detached).
+    // Do NOT use inactive/hidden — the system biometric sheet triggers those
+    // and would cause an unlock loop right after success.
+    switch (state) {
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
+        if (MyPref.isBiometricLockEnabled() && _unlocked) {
+          _lockOnNextResume = true;
+        }
+        break;
+      case AppLifecycleState.resumed:
+        if (!_lockOnNextResume || !MyPref.isBiometricLockEnabled()) {
+          return;
+        }
+        _lockOnNextResume = false;
+        if (_unlocked) {
+          setState(() => _unlocked = false);
+          _unlock();
+        }
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
+        break;
     }
   }
 
@@ -61,7 +80,10 @@ class _AppLockGateState extends State<AppLockGate> with WidgetsBindingObserver {
 
     setState(() {
       _isAuthenticating = false;
-      _unlocked = result.success;
+      if (result.success) {
+        _unlocked = true;
+        _lockOnNextResume = false;
+      }
     });
   }
 
