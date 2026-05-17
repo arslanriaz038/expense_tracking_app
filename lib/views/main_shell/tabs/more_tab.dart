@@ -4,6 +4,7 @@ import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/biometric_lock_tile.dart';
 import 'package:expense_tracking_app/widgets/currency_setting_tile.dart';
+import 'package:expense_tracking_app/widgets/account_security_tile.dart';
 import 'package:expense_tracking_app/widgets/delete_account_tile.dart';
 import 'package:expense_tracking_app/widgets/budget_settings_sheet.dart';
 import 'package:expense_tracking_app/widgets/manage_categories_sheet.dart';
@@ -105,7 +106,13 @@ class MoreTab extends StatelessWidget {
           const SizedBox(height: 8),
           Card(
             clipBehavior: Clip.antiAlias,
-            child: const DeleteAccountTile(),
+            child: const Column(
+              children: [
+                AccountSecurityTile(),
+                Divider(height: 1),
+                DeleteAccountTile(),
+              ],
+            ),
           ),
           const SizedBox(height: 24),
           BlocBuilder<ExpensesCubit, ExpensesCubitState>(

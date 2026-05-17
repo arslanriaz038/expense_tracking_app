@@ -25,7 +25,8 @@ class AuthErrorMessage {
       'invalid-credential' => 'Invalid email or password.',
       'email-already-in-use' => 'An account already exists with this email.',
       'weak-password' => 'Password is too weak. Use at least 8 characters.',
-      'operation-not-allowed' => 'This sign-in method is not enabled.',
+      'operation-not-allowed' =>
+        'This action is not available for your sign-in method.',
       'too-many-requests' => 'Too many attempts. Please wait and try again.',
       'account-exists-with-different-credential' =>
         'An account already exists with a different sign-in method.',
