@@ -78,8 +78,9 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () {
-                  AppData.logOutUserMain();
+                onPressed: () async {
+                  await AppData.logOutUserMain();
+                  if (!context.mounted) return;
                   AppNavigator.popUntilFirst(context);
                   AppNavigator.pushReplacement(context, const LoginScreen());
                 },

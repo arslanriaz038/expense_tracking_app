@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:expense_tracking_app/services/user_services.dart';
-import 'package:expense_tracking_app/utils/my_pref.dart';
+import 'package:expense_tracking_app/services/auth_session_service.dart';
+import 'package:expense_tracking_app/utils/auth_error_message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,28 +11,27 @@ part 'social_login_cubit_state.dart';
 class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   SocialLoginCubit() : super(SocialLoginCubitInitial());
 
-  final UserServices userServices = UserServices();
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   Future<void> signInWithGoogle() async {
     emit(LoadingState());
 
     try {
-      final GoogleSignInAccount googleSignInAccount =
-          await _googleSignIn.authenticate();
-      final GoogleSignInAuthentication googleSignInAuthentication =
+      final googleSignInAccount = await _googleSignIn.authenticate();
+      final googleSignInAuthentication =
           await googleSignInAccount.authentication;
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
+      final credential = GoogleAuthProvider.credential(
         idToken: googleSignInAuthentication.idToken,
       );
 
-      await _performSignUp(
+      await _performSignIn(
         credential,
         name: googleSignInAccount.displayName,
+        providerId: 'google.com',
       );
     } catch (e) {
-      emit(FailedState(errorMessage: e.toString()));
+      emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
     }
   }
 
@@ -40,58 +39,61 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
     emit(LoadingState());
 
     try {
-      final AuthorizationCredentialAppleID appleIdCredential =
-          await SignInWithApple.getAppleIDCredential(
+      final appleIdCredential = await SignInWithApple.getAppleIDCredential(
         scopes: [
           AppleIDAuthorizationScopes.email,
           AppleIDAuthorizationScopes.fullName,
         ],
       );
 
-      final OAuthProvider oAuthProvider = OAuthProvider('apple.com');
-      final AuthCredential credential = oAuthProvider.credential(
+      final oAuthProvider = OAuthProvider('apple.com');
+      final credential = oAuthProvider.credential(
         idToken: appleIdCredential.identityToken,
         accessToken: appleIdCredential.authorizationCode,
       );
-      final String name = appleIdCredential.givenName != null ||
-              appleIdCredential.familyName != null
-          ? "${appleIdCredential.givenName} ${appleIdCredential.familyName}"
-          : '';
 
-      await _performSignUp(
+      final name = appleIdCredential.givenName != null ||
+              appleIdCredential.familyName != null
+          ? '${appleIdCredential.givenName ?? ''} ${appleIdCredential.familyName ?? ''}'
+              .trim()
+          : null;
+
+      await _performSignIn(
         credential,
-        name: name.trim().isNotEmpty ? name.trim() : null,
+        name: name?.isNotEmpty == true ? name : null,
+        providerId: 'apple.com',
       );
-    } catch (e) {
-      if (e is SignInWithAppleAuthorizationException) {
-        emit(const FailedState());
-      } else {
-        emit(FailedState(errorMessage: e.toString()));
+    } on SignInWithAppleAuthorizationException catch (e) {
+      if (e.code == AuthorizationErrorCode.canceled) {
+        emit(SocialLoginCubitInitial());
+        return;
       }
+      emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
+    } catch (e) {
+      emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
     }
   }
 
-  Future<void> _performSignUp(
+  Future<void> _performSignIn(
     AuthCredential credential, {
     String? name,
+    String? providerId,
   }) async {
-    final UserCredential userCredential =
+    final userCredential =
         await FirebaseAuth.instance.signInWithCredential(credential);
 
-    if (userCredential.user != null) {
-      final user = await userServices.signUpUser(
-        id: userCredential.user!.uid,
-        email: userCredential.user!.email,
-        name: userCredential.user?.displayName ?? name,
-        profilePictureUrl: userCredential.user!.photoURL,
-        providerId: credential.providerId,
-      );
-
-      MyPref.updateUserInfo(user);
-
-      emit(LoginSuccess());
-    } else {
-      emit(const FailedState(errorMessage: 'Failed to Sign up'));
+    final firebaseUser = userCredential.user;
+    if (firebaseUser == null) {
+      emit(const FailedState(errorMessage: 'Sign-in failed. Please try again.'));
+      return;
     }
+
+    await AuthSessionService.completeSignIn(
+      firebaseUser,
+      name: name,
+      providerId: providerId,
+    );
+
+    emit(LoginSuccess());
   }
 }

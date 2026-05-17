@@ -1,8 +1,11 @@
 import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
+import 'package:expense_tracking_app/utils/auth_error_message.dart';
 import 'package:expense_tracking_app/utils/helper_functions.dart';
+import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,54 +15,116 @@ class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
 
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _signUp() async {
+    if (!(_formKey.currentState?.validate() ?? false) || _isLoading) return;
+
+    hideKeyBoard();
+    setState(() => _isLoading = true);
+
+    try {
+      final credential =
+          await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      final user = credential.user;
+      if (user == null) {
+        throw FirebaseAuthException(code: 'operation-not-allowed');
+      }
+
+      await AuthSessionService.completeSignIn(
+        user,
+        providerId: 'password',
+      );
+
+      if (!mounted) return;
+      AppAlerts.showSuccessMessage(context, 'Account created successfully');
+      AppNavigator.pushReplacement(context, const AuthenticatedHome());
+    } catch (e) {
+      if (!mounted) return;
+      AppAlerts.showErrorMessage(context, AuthErrorMessage.from(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign Up'),
+        title: const Text('Sign up'),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
         child: Form(
-          key: formKey,
+          key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              const SizedBox(height: 16),
               MyInputField(
                 controller: _emailController,
                 hintText: 'Email',
-                validator: (value) => AppFormFieldValidator.emailValidator(
-                  value,
-                ),
+                keyboardType: TextInputType.emailAddress,
+                validator: AppFormFieldValidator.emailValidator,
               ),
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
               MyInputField(
                 controller: _passwordController,
                 isPassword: true,
                 hintText: 'Password',
                 validator: (value) => AppFormFieldValidator.minLengthValidator(
-                    value, 8, 'Password must be 8 Characters'),
+                  value,
+                  8,
+                  'Password must be at least 8 characters',
+                ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 20),
+              MyInputField(
+                controller: _confirmPasswordController,
+                isPassword: true,
+                hintText: 'Confirm password',
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Confirm your password';
+                  }
+                  if (value != _passwordController.text) {
+                    return 'Passwords do not match';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    AppNavigator.pushReplacement(context, const LoginScreen());
-                  },
+                  onPressed: _isLoading
+                      ? null
+                      : () => AppNavigator.pushReplacement(
+                            context,
+                            const LoginScreen(),
+                          ),
                   child: Text(
-                    'Login?',
+                    'Already have an account?',
                     style: Theme.of(context)
                         .textTheme
                         .labelLarge
@@ -70,15 +135,17 @@ class _SignupScreenState extends State<SignupScreen> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Call a function to sign up the user with email and password
-                    signUpWithEmailAndPassword(
-                      _emailController.text,
-                      _passwordController.text,
-                    );
-                  },
-                  child: const Text('Sign Up'),
+                child: FilledButton(
+                  onPressed: _isLoading ? null : _signUp,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator.adaptive(
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Create account'),
                 ),
               ),
             ],
@@ -86,29 +153,5 @@ class _SignupScreenState extends State<SignupScreen> {
         ),
       ),
     );
-  }
-
-  // Function to sign up the user with email and password
-  Future<void> signUpWithEmailAndPassword(String email, String password) async {
-    if (formKey.currentState?.validate() ?? false) {
-      hideKeyBoard();
-      try {
-        await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
-
-        if (context.mounted) {
-          AppNavigator.pushReplacement(context, const LoginScreen());
-          AppAlerts.showSuccessMessage(context, 'SingUp Success!');
-        }
-
-        // After successful signup, you can navigate to another screen
-        // or perform other actions as needed.
-      } catch (e) {
-        print('Error signing up: $e');
-        // Handle signup errors (e.g., show an error message to the user).
-      }
-    }
   }
 }

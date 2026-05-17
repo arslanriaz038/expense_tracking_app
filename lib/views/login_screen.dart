@@ -1,46 +1,61 @@
+import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_form_fields_validator.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
+import 'package:expense_tracking_app/utils/auth_error_message.dart';
 import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
+import 'package:expense_tracking_app/views/forgot_password_screen.dart';
 import 'package:expense_tracking_app/views/signup_screen.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/view/social_login_buttons.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
 
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _loginWithEmailAndPassword() async {
-    if (formKey.currentState?.validate() ?? false) {
-      try {
-        final String email = _emailController.text.trim();
-        final String password = _passwordController.text.trim();
+    if (!(_formKey.currentState?.validate() ?? false) || _isLoading) return;
 
-        UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-          email: email,
-          password: password,
-        );
+    setState(() => _isLoading = true);
 
-        if (userCredential.user != null) {
-          AppNavigator.pushReplacement(context, const AuthenticatedHome());
-        }
-      } catch (e) {
-        AppAlerts.showErrorMessage(context, '$e');
-        print('Error signing in: $e');
-        // Handle login errors (e.g., show an error message to the user).
+    try {
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      final user = credential.user;
+      if (user == null) {
+        throw FirebaseAuthException(code: 'user-not-found');
       }
+
+      await AuthSessionService.completeSignIn(user);
+
+      if (!mounted) return;
+      AppNavigator.pushReplacement(context, const AuthenticatedHome());
+    } catch (e) {
+      if (!mounted) return;
+      AppAlerts.showErrorMessage(context, AuthErrorMessage.from(e));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -51,14 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Form(
-            key: formKey,
+            key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                const SizedBox(
-                  height: 99,
-                ),
+              children: [
+                const SizedBox(height: 99),
                 Text(
                   'Login',
                   style: Theme.of(context).textTheme.displayLarge,
@@ -75,29 +88,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 MyInputField(
                   controller: _emailController,
                   hintText: 'Email',
-                  validator: (value) => AppFormFieldValidator.emailValidator(
-                    value,
-                  ),
+                  keyboardType: TextInputType.emailAddress,
+                  validator: AppFormFieldValidator.emailValidator,
                 ),
                 const SizedBox(height: 16),
                 MyInputField(
                   controller: _passwordController,
                   hintText: 'Password',
                   isPassword: true,
-                  validator: (value) =>
-                      AppFormFieldValidator.emptyFieldValidator(
-                          value, 'Enter Password '),
+                  validator: (value) => AppFormFieldValidator.emptyFieldValidator(
+                    value,
+                    'Enter password',
+                  ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerRight,
                   child: TextButton(
-                    onPressed: () {
-                      AppNavigator.pushReplacement(
-                          context, const SignupScreen());
-                    },
+                    onPressed: _isLoading
+                        ? null
+                        : () => AppNavigator.push(
+                              context,
+                              const ForgotPasswordScreen(),
+                            ),
                     child: Text(
-                      'Sign up?',
+                      'Forgot password?',
                       style: Theme.of(context)
                           .textTheme
                           .labelLarge
@@ -105,14 +120,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 31),
+                const SizedBox(height: 16),
                 SizedBox(
                   width: MediaQuery.of(context).size.width,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _loginWithEmailAndPassword();
-                    },
-                    child: const Text('Login'),
+                  child: FilledButton(
+                    onPressed: _isLoading ? null : _loginWithEmailAndPassword,
+                    child: _isLoading
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator.adaptive(
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text('Login'),
                   ),
                 ),
                 const SizedBox(height: 32),
@@ -126,25 +147,31 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 24),
                 const SocialLoginButtons(),
                 const SizedBox(height: 64),
-                const SizedBox(height: 83),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text('Don\'t have an Account? ',
-                        style: Theme.of(context).textTheme.labelLarge),
+                  children: [
+                    Text(
+                      "Don't have an account? ",
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
                     TextButton(
-                      onPressed: () {
-                        AppNavigator.pushReplacement(
-                            context, const SignupScreen());
-                      },
+                      onPressed: _isLoading
+                          ? null
+                          : () => AppNavigator.pushReplacement(
+                                context,
+                                const SignupScreen(),
+                              ),
                       child: Text(
-                        'Sign Up',
+                        'Sign up',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: Colors.blue, fontWeight: FontWeight.bold),
+                              color: Colors.blue,
+                              fontWeight: FontWeight.bold,
+                            ),
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 32),
               ],
             ),
           ),

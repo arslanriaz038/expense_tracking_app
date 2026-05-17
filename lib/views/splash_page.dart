@@ -1,8 +1,8 @@
 import 'package:expense_tracking_app/consts/app_constants.dart';
 import 'package:expense_tracking_app/gen/assets.gen.dart';
 import 'package:expense_tracking_app/gen/colors.gen.dart';
+import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
-import 'package:expense_tracking_app/utils/my_pref.dart';
 import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +19,7 @@ class _SplashPageState extends State<SplashPage>
     with SingleTickerProviderStateMixin {
   AnimationController? animationController;
   Animation<double>? fadeAnimation;
+  bool _hasRouted = false;
 
   void openLoginScreen(BuildContext context) {
     AppNavigator.pushReplacement(
@@ -58,12 +59,17 @@ class _SplashPageState extends State<SplashPage>
       ),
     );
     animationController?.forward();
-    animationController?.addListener(() {
-      if (animationController?.status == AnimationStatus.completed) {
-        MyPref.isUserLoggedIn()
-            ? openMainScreen(context)
-            : openLoginScreen(context);
+    animationController?.addListener(() async {
+      if (animationController?.status != AnimationStatus.completed ||
+          _hasRouted) {
+        return;
       }
+      _hasRouted = true;
+
+      final user = await AuthSessionService.restoreSession();
+      if (!mounted) return;
+
+      user != null ? openMainScreen(context) : openLoginScreen(context);
     });
   }
 

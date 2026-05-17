@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:expense_tracking_app/gen/assets.gen.dart';
+import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/cubit/social_login_cubit.dart';
@@ -22,12 +23,10 @@ class SocialLoginButtons extends StatelessWidget {
       child: BlocConsumer<SocialLoginCubit, SocialLoginCubitState>(
         listener: (context, state) {
           if (state is FailedState) {
-            // if (state.errorMessage != null) {
-            //   AppAlerts.showErrorMessage(
-            //     context,
-            //     state.errorMessage,
-            //   );
-            // }
+            AppAlerts.showErrorMessage(
+              context,
+              state.errorMessage ?? 'Sign-in failed. Please try again.',
+            );
           } else if (state is LoginSuccess) {
             _openMainScreen(context);
           }

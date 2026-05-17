@@ -109,8 +109,9 @@ class MoreTab extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
-              onPressed: () {
-                AppData.logOutUserMain();
+              onPressed: () async {
+                await AppData.logOutUserMain();
+                if (!context.mounted) return;
                 AppNavigator.popUntilFirst(context);
                 AppNavigator.pushReplacement(context, const LoginScreen());
               },

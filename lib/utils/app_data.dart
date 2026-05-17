@@ -1,6 +1,6 @@
 import 'package:expense_tracking_app/models/user_model.dart';
+import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/utils/my_pref.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AppData {
   AppData._();
@@ -20,9 +20,10 @@ class AppData {
 
   static UserModel? get currentUser => _user;
 
-  static void logOutUserMain() {
+  static void clearLocalSession() {
     _user = null;
     MyPref.logOutUser();
-    FirebaseAuth.instance.signOut();
   }
+
+  static Future<void> logOutUserMain() => AuthSessionService.signOut();
 }
