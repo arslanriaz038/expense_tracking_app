@@ -81,7 +81,7 @@ class _SplashPageState extends State<SplashPage>
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            ColorName.primaryColor.withOpacity(0.5),
+            ColorName.primaryColor.withValues(alpha: 0.5),
             ColorName.primaryColor,
           ],
         ),

@@ -19,6 +19,7 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -27,6 +28,7 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -51,8 +53,12 @@ class _SignupScreenState extends State<SignupScreen> {
         throw FirebaseAuthException(code: 'operation-not-allowed');
       }
 
+      final name = _nameController.text.trim();
+      await user.updateDisplayName(name);
+
       await AuthSessionService.completeSignIn(
         user,
+        name: name,
         providerId: 'password',
       );
 
@@ -81,6 +87,16 @@ class _SignupScreenState extends State<SignupScreen> {
           child: Column(
             children: [
               const SizedBox(height: 16),
+              MyInputField(
+                controller: _nameController,
+                hintText: 'Full name',
+                textCapitalization: TextCapitalization.words,
+                validator: (value) => AppFormFieldValidator.emptyFieldValidator(
+                  value,
+                  'Name is required',
+                ),
+              ),
+              const SizedBox(height: 20),
               MyInputField(
                 controller: _emailController,
                 hintText: 'Email',

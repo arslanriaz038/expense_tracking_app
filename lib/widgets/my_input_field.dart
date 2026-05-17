@@ -18,6 +18,7 @@ class MyInputField extends StatefulWidget {
   final bool isPassword;
   final int? minLines;
   final int? maxLines;
+  final TextCapitalization textCapitalization;
 
   const MyInputField({
     super.key,
@@ -35,6 +36,7 @@ class MyInputField extends StatefulWidget {
     this.validator,
     this.errorText,
     this.inputFormatters,
+    this.textCapitalization = TextCapitalization.none,
   });
 
   @override
@@ -60,6 +62,7 @@ class _MyInputFieldState extends State<MyInputField> {
       style: widget.textStyle ??
           Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: 18),
       keyboardType: widget.keyboardType,
+      textCapitalization: widget.textCapitalization,
       inputFormatters: widget.inputFormatters,
       decoration: InputDecoration(
         errorText: widget.errorText,
