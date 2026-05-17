@@ -4,6 +4,7 @@ import 'package:expense_tracking_app/utils/app_alerts.dart';
 import 'package:expense_tracking_app/utils/app_navigator.dart';
 import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/social_login_buttons/cubit/social_login_cubit.dart';
+import 'package:expense_tracking_app/widgets/link_account_dialog.dart';
 import 'package:expense_tracking_app/widgets/loading_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +12,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class SocialLoginButtons extends StatelessWidget {
   const SocialLoginButtons({
     super.key,
+    this.nameHint,
+    this.providerIdHint,
   });
+
+  final String? nameHint;
+  final String? providerIdHint;
 
   void _openMainScreen(BuildContext context) =>
       AppNavigator.pushReplacement(context, const AuthenticatedHome());
@@ -21,7 +27,7 @@ class SocialLoginButtons extends StatelessWidget {
     return BlocProvider(
       create: (context) => SocialLoginCubit(),
       child: BlocConsumer<SocialLoginCubit, SocialLoginCubitState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is FailedState) {
             AppAlerts.showErrorMessage(
               context,
@@ -29,6 +35,28 @@ class SocialLoginButtons extends StatelessWidget {
             );
           } else if (state is LoginSuccess) {
             _openMainScreen(context);
+          } else if (state is AccountLinkNeededState) {
+            final cubit = context.read<SocialLoginCubit>();
+            final password = await showLinkAccountPasswordDialog(
+              context,
+              email: state.email,
+              pendingProviderLabel: state.pendingProviderLabel,
+            );
+
+            if (!context.mounted) return;
+
+            if (password == null) {
+              cubit.reset();
+              return;
+            }
+
+            await cubit.linkWithPassword(
+              email: state.email,
+              password: password,
+              pendingCredential: state.pendingCredential,
+              name: nameHint,
+              providerId: providerIdHint,
+            );
           }
         },
         builder: (context, state) {

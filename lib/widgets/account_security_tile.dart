@@ -1,5 +1,6 @@
 import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/views/change_password_screen.dart';
+import 'package:expense_tracking_app/views/link_sign_in_methods_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -29,27 +30,65 @@ class AccountSecurityTile extends StatelessWidget {
     final methodLabel = AuthSessionService.signInMethodLabel(user);
 
     if (usesEmail) {
-      return ListTile(
-        leading: const Icon(Icons.lock_outline),
-        title: const Text('Change password'),
-        subtitle: const Text('Update your email account password'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(
-              builder: (_) => const ChangePasswordScreen(),
-            ),
-          );
-        },
+      return Column(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.link),
+            title: const Text('Link sign-in methods'),
+            subtitle: const Text('Connect Google or Apple to the same account'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const LinkSignInMethodsScreen(),
+                ),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          ListTile(
+            leading: const Icon(Icons.lock_outline),
+            title: const Text('Change password'),
+            subtitle: const Text('Update your email account password'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => const ChangePasswordScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       );
     }
 
-    return ListTile(
-      leading: const Icon(Icons.shield_outlined),
-      title: const Text('Sign-in & password'),
-      subtitle: Text('Signed in with $methodLabel · managed outside this app'),
-      trailing: const Icon(Icons.info_outline),
-      onTap: () => _showSocialPasswordInfo(context, user),
+    return Column(
+      children: [
+        ListTile(
+          leading: const Icon(Icons.link),
+          title: const Text('Link sign-in methods'),
+          subtitle: const Text('Add email & password or another provider'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const LinkSignInMethodsScreen(),
+              ),
+            );
+          },
+        ),
+        const Divider(height: 1),
+        ListTile(
+          leading: const Icon(Icons.shield_outlined),
+          title: const Text('Sign-in & password'),
+          subtitle: Text(
+            'Signed in with $methodLabel · managed outside this app',
+          ),
+          trailing: const Icon(Icons.info_outline),
+          onTap: () => _showSocialPasswordInfo(context, user),
+        ),
+      ],
     );
   }
 }

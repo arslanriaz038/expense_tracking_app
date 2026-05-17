@@ -7,6 +7,7 @@ import 'package:expense_tracking_app/utils/auth_error_message.dart';
 import 'package:expense_tracking_app/utils/helper_functions.dart';
 import 'package:expense_tracking_app/views/app_lock/authenticated_home.dart';
 import 'package:expense_tracking_app/views/login_screen.dart';
+import 'package:expense_tracking_app/widgets/link_account_dialog.dart';
 import 'package:expense_tracking_app/widgets/my_input_field.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -65,6 +66,19 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
       AppAlerts.showSuccessMessage(context, 'Account created successfully');
       AppNavigator.pushReplacement(context, const AuthenticatedHome());
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      if (e.code == 'email-already-in-use') {
+        final goToLogin = await showEmailAlreadyRegisteredDialog(context);
+        if (goToLogin && mounted) {
+          AppNavigator.pushReplacement(
+            context,
+            LoginScreen(initialEmail: _emailController.text.trim()),
+          );
+        }
+        return;
+      }
+      AppAlerts.showErrorMessage(context, AuthErrorMessage.from(e));
     } catch (e) {
       if (!mounted) return;
       AppAlerts.showErrorMessage(context, AuthErrorMessage.from(e));

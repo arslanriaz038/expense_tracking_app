@@ -29,7 +29,10 @@ class AuthErrorMessage {
         'This action is not available for your sign-in method.',
       'too-many-requests' => 'Too many attempts. Please wait and try again.',
       'account-exists-with-different-credential' =>
-        'An account already exists with a different sign-in method.',
+        'This email is already registered. Sign in with your existing method to link accounts.',
+      'provider-already-linked' => 'That sign-in method is already linked.',
+      'credential-already-in-use' =>
+        'This sign-in method is already linked to your account.',
       'invalid-verification-code' => 'Invalid verification code.',
       'invalid-verification-id' => 'Verification expired. Please try again.',
       'cancelled' || 'canceled' => 'Sign-in was canceled.',

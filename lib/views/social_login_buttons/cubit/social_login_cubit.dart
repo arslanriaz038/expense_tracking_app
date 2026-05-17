@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:expense_tracking_app/services/account_linking_service.dart';
 import 'package:expense_tracking_app/services/auth_session_service.dart';
 import 'package:expense_tracking_app/utils/auth_error_message.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +13,8 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
   SocialLoginCubit() : super(SocialLoginCubitInitial());
 
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+
+  void reset() => emit(SocialLoginCubitInitial());
 
   Future<void> signInWithGoogle() async {
     emit(LoadingState());
@@ -29,9 +32,12 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
         credential,
         name: googleSignInAccount.displayName,
         providerId: 'google.com',
+        pendingProviderLabel: 'Google',
       );
     } catch (e) {
-      emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
+      if (e is! AccountLinkRequired) {
+        emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
+      }
     }
   }
 
@@ -62,6 +68,7 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
         credential,
         name: name?.isNotEmpty == true ? name : null,
         providerId: 'apple.com',
+        pendingProviderLabel: 'Apple',
       );
     } on SignInWithAppleAuthorizationException catch (e) {
       if (e.code == AuthorizationErrorCode.canceled) {
@@ -69,6 +76,36 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
         return;
       }
       emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
+    } catch (e) {
+      if (e is! AccountLinkRequired) {
+        emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
+      }
+    }
+  }
+
+  Future<void> linkWithPassword({
+    required String email,
+    required String password,
+    required AuthCredential pendingCredential,
+    String? name,
+    String? providerId,
+  }) async {
+    emit(LoadingState());
+
+    try {
+      final user = await AccountLinkingService.linkPendingCredentialWithPassword(
+        email: email,
+        password: password,
+        pendingCredential: pendingCredential,
+      );
+
+      await AuthSessionService.completeSignIn(
+        user,
+        name: name,
+        providerId: providerId,
+      );
+
+      emit(LoginSuccess());
     } catch (e) {
       emit(FailedState(errorMessage: AuthErrorMessage.from(e)));
     }
@@ -78,22 +115,36 @@ class SocialLoginCubit extends Cubit<SocialLoginCubitState> {
     AuthCredential credential, {
     String? name,
     String? providerId,
+    required String pendingProviderLabel,
   }) async {
-    final userCredential =
-        await FirebaseAuth.instance.signInWithCredential(credential);
+    try {
+      final userCredential =
+          await AccountLinkingService.signInWithCredentialHandlingLink(
+        credential,
+        pendingProviderLabel: pendingProviderLabel,
+      );
 
-    final firebaseUser = userCredential.user;
-    if (firebaseUser == null) {
-      emit(const FailedState(errorMessage: 'Sign-in failed. Please try again.'));
-      return;
+      final firebaseUser = userCredential.user;
+      if (firebaseUser == null) {
+        emit(const FailedState(errorMessage: 'Sign-in failed. Please try again.'));
+        return;
+      }
+
+      await AuthSessionService.completeSignIn(
+        firebaseUser,
+        name: name,
+        providerId: providerId,
+      );
+
+      emit(LoginSuccess());
+    } on AccountLinkRequired catch (link) {
+      emit(
+        AccountLinkNeededState(
+          email: link.email,
+          pendingCredential: link.pendingCredential,
+          pendingProviderLabel: link.pendingProviderLabel,
+        ),
+      );
     }
-
-    await AuthSessionService.completeSignIn(
-      firebaseUser,
-      name: name,
-      providerId: providerId,
-    );
-
-    emit(LoginSuccess());
   }
 }
