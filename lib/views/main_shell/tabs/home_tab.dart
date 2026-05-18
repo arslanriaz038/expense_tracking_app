@@ -30,9 +30,7 @@ class _HomeTabState extends State<HomeTab> {
   ExpenseDateFilter _period = ExpenseDateFilter.thisMonth;
 
   List<Expense> _periodExpenses(List<Expense> all, DateTime now) {
-    return all
-        .where((e) => expenseMatchesDateFilter(e, _period, now))
-        .toList();
+    return all.where((e) => expenseMatchesDateFilter(e, _period, now)).toList();
   }
 
   @override
@@ -75,9 +73,10 @@ class _HomeTabState extends State<HomeTab> {
                     children: [
                       Text(
                         'Hello, ${MyPref.readUserInfo()?.name ?? 'there'}',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -129,14 +128,18 @@ class _HomeTabState extends State<HomeTab> {
                         children: [
                           Text(
                             'Recent',
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleLarge
+                                ?.copyWith(
                                   fontWeight: FontWeight.bold,
                                 ),
                           ),
                           if (periodExpenses.isNotEmpty)
                             TextButton(
                               onPressed: () => widget.onViewAllActivity(
-                                filters: ExpenseListFilters(dateFilter: _period),
+                                filters:
+                                    ExpenseListFilters(dateFilter: _period),
                               ),
                               child: const Text('View all'),
                             ),
@@ -154,7 +157,8 @@ class _HomeTabState extends State<HomeTab> {
                       else if (recentFive.isEmpty)
                         const TransactionEmptyState(
                           title: 'Nothing this period',
-                          message: 'Try a different time range or add a transaction.',
+                          message:
+                              'Try a different time range or add a transaction.',
                         )
                       else
                         ...recentFive.map(

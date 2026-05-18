@@ -3,6 +3,7 @@ import 'package:expense_tracking_app/consts/expense_constants.dart';
 import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/utils/expense_date_filter.dart';
 import 'package:expense_tracking_app/utils/expense_list_filters.dart';
+import 'package:expense_tracking_app/utils/expense_sort.dart';
 import 'package:expense_tracking_app/views/add_expense/cubit/expenses_cubit.dart';
 import 'package:expense_tracking_app/widgets/activity_filters_sheet.dart';
 import 'package:expense_tracking_app/widgets/expense_item_card.dart';
@@ -264,7 +265,9 @@ class ActivityTabState extends State<ActivityTab> {
                       delegate: SliverChildBuilderDelegate(
                         (context, sectionIndex) {
                           final date = sortedDates[sectionIndex];
-                          final sectionExpenses = grouped[date]!;
+                          final sectionExpenses = List<Expense>.from(
+                            grouped[date]!,
+                          )..sort(compareExpensesByDisplayOrder);
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [

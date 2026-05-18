@@ -7,6 +7,7 @@ import 'package:expense_tracking_app/models/expense.dart';
 import 'package:expense_tracking_app/models/monthly_budget.dart';
 import 'package:expense_tracking_app/services/firebase_services.dart';
 import 'package:expense_tracking_app/services/pending_receipt_service.dart';
+import 'package:expense_tracking_app/utils/expense_sort.dart';
 import 'package:expense_tracking_app/utils/helper_functions.dart';
 import 'package:expense_tracking_app/utils/money_format.dart';
 import 'package:expense_tracking_app/utils/network_status.dart';
@@ -80,6 +81,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
         allExpenses
           ..clear()
           ..addAll(expenses);
+        sortExpensesByDisplayOrder(allExpenses);
         _ensureSelectedCategoryValid();
         _emitExpensesLoadedIfIdle();
       },
@@ -252,6 +254,7 @@ class ExpensesCubit extends Cubit<ExpensesCubitState> {
       allExpenses
         ..clear()
         ..addAll(expenses);
+      sortExpensesByDisplayOrder(allExpenses);
       _ensureSelectedCategoryValid();
       emit(AllExpensesLoadedState(expenses: List.from(allExpenses)));
     } catch (e) {

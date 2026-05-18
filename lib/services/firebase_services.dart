@@ -35,7 +35,11 @@ class FirebaseServices {
       return Stream.value([]);
     }
 
-    return expenseRef.orderBy('createdAt', descending: true).snapshots().map(
+    return expenseRef
+        .orderBy('date', descending: true)
+        .orderBy('createdAt', descending: true)
+        .snapshots()
+        .map(
           (snapshot) => snapshot.docs
               .map((document) => Expense.fromSnapshot(document))
               .toList(),
@@ -48,6 +52,7 @@ class FirebaseServices {
 
     try {
       final querySnapshot = await expenseRef
+          .orderBy('date', descending: true)
           .orderBy('createdAt', descending: true)
           .get(const GetOptions(source: Source.serverAndCache));
       return querySnapshot.docs
